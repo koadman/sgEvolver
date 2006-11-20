@@ -636,8 +636,8 @@ void Alignment::writeAlignment( ostream& os, const PhyloTree& t, boolean write_a
 		}
 		int seq_id = 0;
 		for( seqI = 0; seqI < alignment[ 0 ].sequences.size(); seqI++ ){
-			if( !write_ancestors && t[ seqI ].children.size() > 0 )
-				continue;	// only write out the leaf nodes
+			if( !write_ancestors && t[ seqI ].children.size() > 0 || ungapped_seqs[ seqI ].size() == 0)
+				continue;	// only write out the leaf nodes which have length > 0
 			seq_id++;
 			os << "> " << seq_id << ":";
 			if( lcb_list[ alignI ].left_end[ seqI ] < 0 ){
