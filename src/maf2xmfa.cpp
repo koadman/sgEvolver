@@ -43,10 +43,7 @@ int main( int argc, char* argv[] )
 	// construct an IntervalList from the maf file
 	IntervalList iv_list;
 	iv_list.seq_filename = seq_filename;
-	MatchList mlist;
-	mlist.seq_filename = seq_filename;
-	mlist.LoadSequences( &cout );
-	iv_list.seq_table = mlist.seq_table;
+	LoadSequences( iv_list, &cout );
 
 	int read_state = 0;
 	string cur_line;
