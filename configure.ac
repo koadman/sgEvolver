@@ -1,12 +1,12 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_INIT(sgEvolver, 0.5.0)
+AC_INIT(sgEvolver, 0.6.0)
 
 dnl Get the target and build system types and add appropriate options
 AC_CANONICAL_TARGET
 
 AM_INIT_AUTOMAKE([no-define])
 
-PKG_CHECK_MODULES(DEPS, libMems-1.3 >= 1.4.0)
+PKG_CHECK_MODULES(DEPS, libMems-1.5 >= 1.0.0)
 AC_SUBST(DEPS_CFLAGS)
 AC_SUBST(DEPS_LIBS)
 
