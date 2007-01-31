@@ -34,6 +34,6 @@ maf2xmfa_LDADD = $(LIBRARY_CL)
 
 INCLUDES = @DEPS_CFLAGS@ 
 
-bin_SCRIPTS = simujobrun.pl simujobgen.pl scoregen.pl rgradientlegend.R rgradientplot.R
-data_DATA = simujobparams.pm
+dist_bin_SCRIPTS = simujobrun.pl simujobgen.pl scoregen.pl rgradientlegend.R rgradientplot.R
+dist_data_DATA = simujobparams.pm
 
