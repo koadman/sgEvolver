@@ -650,7 +650,7 @@ void computeLCBaccuracy( IntervalList& correct, IntervalList& calculated, vector
 	{
 		for( seqJ = seqI+1; seqJ < seq_table.size(); seqJ++ )
 		{
-			vector< uint > projection( 2 );
+			vector< size_t > projection( 2 );
 			projection[0] = seqI;
 			projection[1] = seqJ;
 
