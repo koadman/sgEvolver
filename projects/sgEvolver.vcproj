@@ -40,7 +40,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="include;..\..\libGenome;..\..\libClustalW;..\..\libMems\;..\..\boost\include\boost-1_33_1"
+				AdditionalIncludeDirectories="..\..\muscle\;..\..\muscle\libMUSCLE;include;..\..\libGenome;..\..\libClustalW;..\..\libMems\;..\..\boost\boost_1_34_0\"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;__GNDEBUG__;_SCL_SECURE_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -61,10 +61,10 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="kernel32.lib rpcrt4.lib wsock32.lib ole32.lib shell32.lib comdlg32.lib gdi32.lib advapi32.lib user32.lib mmc.lib comctl32.lib winmm.lib ..\..\libGenome\lib\genomed.lib ..\..\libClustalW\lib\ClustalWd.lib ..\..\libMems\lib\memsd.lib"
+				AdditionalDependencies="kernel32.lib rpcrt4.lib wsock32.lib ole32.lib shell32.lib comdlg32.lib gdi32.lib advapi32.lib user32.lib mmc.lib comctl32.lib winmm.lib psapi.lib ..\..\libGenome\lib\genomed.lib ..\..\libClustalW\lib\ClustalWd.lib ..\..\libMems\lib\memsd.lib"
 				OutputFile="$(OutDir)/sgEvolverd.exe"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="&quot;C:\Program Files\Microsoft SDK\Lib&quot;"
+				AdditionalLibraryDirectories="..\..\muscle\lib;&quot;C:\Program Files\Microsoft SDK\Lib&quot;"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(OutDir)/sgEvolver.pdb"
 				SubSystem="1"
@@ -120,7 +120,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="3"
-				AdditionalIncludeDirectories="include;..\..\libGenome;..\..\libClustalW;..\..\libMems\;..\..\boost\include\boost-1_33_1"
+				AdditionalIncludeDirectories="..\..\muscle\;..\..\muscle\libMUSCLE;include;..\..\libGenome;..\..\libClustalW;..\..\libMems\;..\..\boost\boost_1_34_0\"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;_SCL_SECURE_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"
@@ -139,10 +139,10 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="kernel32.lib rpcrt4.lib wsock32.lib ole32.lib shell32.lib comdlg32.lib gdi32.lib advapi32.lib user32.lib mmc.lib comctl32.lib winmm.lib ..\..\libGenome\lib\genome.lib ..\..\libClustalW\lib\ClustalW.lib ..\..\libMems\lib\mems.lib"
+				AdditionalDependencies="kernel32.lib rpcrt4.lib wsock32.lib ole32.lib shell32.lib comdlg32.lib gdi32.lib advapi32.lib user32.lib mmc.lib comctl32.lib winmm.lib psapi.lib ..\..\libGenome\lib\genome.lib ..\..\libClustalW\lib\ClustalW.lib ..\..\libMems\lib\mems.lib"
 				OutputFile="$(OutDir)/sgEvolver.exe"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="&quot;C:\Program Files\Microsoft SDK\Lib&quot;"
+				AdditionalLibraryDirectories="..\..\muscle\lib;&quot;C:\Program Files\Microsoft SDK\Lib&quot;"
 				GenerateDebugInformation="true"
 				SubSystem="1"
 				OptimizeReferences="2"
@@ -199,7 +199,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="include;..\..\libGenome;..\..\libClustalW;..\..\libMems\;..\..\boost\include\boost-1_33_1"
+				AdditionalIncludeDirectories="..\..\muscle\;..\..\muscle\libMUSCLE;include;..\..\libGenome;..\..\libClustalW;..\..\libMems\;..\..\boost\boost_1_34_0\"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;_SCL_SECURE_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"
@@ -218,10 +218,10 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="kernel32.lib rpcrt4.lib wsock32.lib ole32.lib shell32.lib comdlg32.lib gdi32.lib advapi32.lib user32.lib mmc.lib comctl32.lib winmm.lib ..\..\libGenome\lib\genome.lib ..\..\libClustalW\lib\ClustalW.lib ..\..\libMems\lib\mems.lib"
+				AdditionalDependencies="kernel32.lib rpcrt4.lib wsock32.lib ole32.lib shell32.lib comdlg32.lib gdi32.lib advapi32.lib user32.lib mmc.lib comctl32.lib winmm.lib psapi.lib ..\..\libGenome\lib\genome.lib ..\..\libClustalW\lib\ClustalW.lib ..\..\libMems\lib\mems.lib"
 				OutputFile="$(OutDir)/sgEvolver.exe"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="&quot;C:\Program Files\Microsoft SDK\Lib&quot;"
+				AdditionalLibraryDirectories="..\..\muscle\lib;&quot;C:\Program Files\Microsoft SDK\Lib&quot;"
 				GenerateDebugInformation="true"
 				SubSystem="1"
 				OptimizeReferences="2"
