@@ -30,181 +30,6 @@ using namespace mems;
 
 // basic data structures
 
-//
-// baaad:  copied functions from ProgressiveAligner.h
-//
-
-template< typename PairType >
-class LabelSort 
-{
-public:
-	LabelSort( uint seqI ) : ssc( seqI ) {};
-	bool operator()( const PairType& pt1, const PairType& pt2 )
-	{
-		return ssc( pt1.first, pt2.first );
-	}
-private:
-	LabelSort();
-	mems::SSC<mems::AbstractMatch> ssc;
-};
-
-template<class MatchVector>
-void IdentifyBreakpoints( MatchVector& mlist, std::vector<gnSeqI>& breakpoints )
-{
-	if( mlist.size() == 0 )
-		return;
-	breakpoints = std::vector<gnSeqI>(1, mlist.size()-1);
-
-	mems::SSC<mems::AbstractMatch> ssc(0);
-	std::sort( mlist.begin(), mlist.end(), ssc );
-	typedef typename MatchVector::value_type value_type;
-	typedef std::pair< value_type, size_t > LabelPairType;
-	std::vector< LabelPairType > label_list;
-	typename MatchVector::iterator cur = mlist.begin();
-	typename MatchVector::iterator end = mlist.end();
-	size_t i = 0;
-	for( ;cur != end; ++cur )
-	{
-		label_list.push_back( std::make_pair( *cur, i ) );
-		++i;
-	}
-
-	uint seq_count = mlist[0]->SeqCount();
-	// check for breakpoints in each sequence
-	for( uint seqI = 1; seqI < seq_count; seqI++ )
-	{
-		LabelSort< LabelPairType > ls(seqI); 
-		std::sort( label_list.begin(), label_list.end(), ls );
-
-		typename std::vector< LabelPairType >::const_iterator prev = label_list.begin();
-		typename std::vector< std::pair< typename MatchVector::value_type, size_t > >::const_iterator iter = label_list.begin();
-		typename std::vector< std::pair< typename MatchVector::value_type, size_t > >::const_iterator lab_end = label_list.end();
-
-		bool prev_orient = (*prev).first->Orientation(seqI) == (*prev).first->Orientation(0);
-		if( !prev_orient )	// if we start in a different orientation than the ref seq there's a bp here
-			breakpoints.push_back(prev->second);
-
-		for( ++iter; iter != lab_end; ++iter )
-		{
-			bool cur_orient = (*iter).first->Orientation(seqI) == (*iter).first->Orientation(0);
-			if( prev_orient == cur_orient &&
-				( ( prev_orient && (*prev).second + 1 == (*iter).second) ||
-				  ( !prev_orient && (*prev).second - 1 == (*iter).second) 
-				)
-			  )
-			{
-				prev_orient = cur_orient;
-				++prev;
-				continue;	// no breakpoint here
-			}
-
-			// always add the last match in a new block (scanning from left to right in seq 0)
-			if( prev_orient )
-				breakpoints.push_back( prev->second );
-			if( !cur_orient )
-				breakpoints.push_back( iter->second );
-
-			prev_orient = cur_orient;
-			++prev;
-		}
-		if( prev_orient )
-			breakpoints.push_back( prev->second );
-	}
-	std::sort( breakpoints.begin(), breakpoints.end() );
-	std::vector<gnSeqI>::iterator uni = std::unique( breakpoints.begin(), breakpoints.end() );
-	breakpoints.erase( uni, breakpoints.end() );
-}
-
-
-template< class MatchVector >
-void ComputeLCBs_v2( const MatchVector& meml, const std::vector<gnSeqI>& breakpoints, std::vector< MatchVector >& lcb_list )
-{
-	// there must be at least one end of a block defined
-	if( breakpoints.size() < 1 )
-		return;
-		
-	lcb_list.clear();
-	
-	// organize the LCBs into different MatchVector instances
-	std::vector<gnSeqI>::const_iterator break_iter = breakpoints.begin();
-	uint prev_break = 0;	// prev_break is the first match in the current block
-	MatchVector lcb;
-	for( ; break_iter != breakpoints.end(); ++break_iter ){
-		// add the new MatchList to the set if it made the cut
-		lcb_list.push_back( lcb );
-		lcb_list.back().insert( lcb_list.back().end(), meml.begin() + prev_break, meml.begin() + *break_iter + 1 );
-		prev_break = *break_iter + 1;
-	}
-}
-
-
-template <class MatchVector>
-void computeLCBAdjacencies_v3( const std::vector< MatchVector >& lcb_list, std::vector< double >& weights, std::vector< mems::LCB >& adjacencies )
-{
-	adjacencies.clear(); // start with no LCB adjacencies
-	if( lcb_list.size() == 0 )
-		return;	// there aren't any LCBs so there aren't any adjacencies!
-
-	uint seq_count = lcb_list.front().front()->SeqCount();
-	uint seqI;
-	uint lcbI;
-	for( lcbI = 0; lcbI < lcb_list.size(); ++lcbI ){
-		mems::LCB lcb;
-		std::vector<gnSeqI> left_end;
-		std::vector<gnSeqI> length;
-		std::vector<bool> orientation;
-		FindBoundaries( lcb_list[lcbI], left_end, length, orientation );
-
-		lcb.left_adjacency = std::vector<uint>( left_end.size(), -1 );
-		lcb.right_adjacency = std::vector<uint>( left_end.size(), -1 );
-		lcb.left_end = std::vector<int64>( left_end.size(), 0 );
-		lcb.right_end = std::vector<int64>( left_end.size(), 0 );
-
-		for( seqI = 0; seqI < seq_count; seqI++ ){
-			// support "ragged edges" on the ends of LCBs
-			if( left_end[seqI] == mems::NO_MATCH )
-				continue;
-			lcb.left_end[seqI] = left_end[seqI];
-			lcb.right_end[seqI] = left_end[seqI] + length[seqI];
-			if( !orientation[seqI] )
-			{
-				lcb.left_end[seqI] = -lcb.left_end[seqI];
-				lcb.right_end[seqI] = -lcb.right_end[seqI];
-			}
-		}
-		lcb.lcb_id = adjacencies.size();
-		lcb.weight = weights[ lcbI ];
-		lcb.to_be_deleted = false;
-		adjacencies.push_back( lcb );
-	}
-
-	for( seqI = 0; seqI < seq_count; seqI++ ){
-		mems::LCBLeftComparator llc( seqI );
-		std::sort( adjacencies.begin(), adjacencies.end(), llc );
-		for( lcbI = 1; lcbI + 1 < lcb_list.size(); lcbI++ ){
-			adjacencies[ lcbI ].left_adjacency[ seqI ] = adjacencies[ lcbI - 1 ].lcb_id;
-			adjacencies[ lcbI ].right_adjacency[ seqI ] = adjacencies[ lcbI + 1 ].lcb_id;
-		}
-		if( lcbI == lcb_list.size() )
-			lcbI--;	// need to decrement when there is only a single LCB
-
-		// set first and last lcb adjacencies to -1
-		adjacencies[ 0 ].left_adjacency[ seqI ] = (uint)-1;
-		adjacencies[ lcbI ].right_adjacency[ seqI ] = (uint)-1;
-		if( lcbI > 0 ){
-			adjacencies[ 0 ].right_adjacency[ seqI ] = adjacencies[ 1 ].lcb_id;
-			adjacencies[ lcbI ].left_adjacency[ seqI ] = adjacencies[ lcbI - 1 ].lcb_id;
-		}
-	}
-	mems::LCBIDComparator lic;
-	std::sort( adjacencies.begin(), adjacencies.end(), lic );
-
-}
-
-//
-// end baaad
-//
-
 /** store a pair of aligned positions and the characters */
 typedef struct aligned_coords_s {
 	int64 pos1;
@@ -650,7 +475,7 @@ void computeLCBaccuracy( IntervalList& correct, IntervalList& calculated, vector
 	{
 		for( seqJ = seqI+1; seqJ < seq_table.size(); seqJ++ )
 		{
-			vector< size_t > projection( 2 );
+			vector< uint > projection( 2 );
 			projection[0] = seqI;
 			projection[1] = seqJ;
 
@@ -933,12 +758,277 @@ void computeLCBaccuracy( IntervalList& correct, IntervalList& calculated, vector
 	}
 }
 
+/** records the aligned segments flanking an indel */
+typedef struct indel_s
+{
+	aligned_coords_t left_block_left;
+	aligned_coords_t left_block_right;
+	aligned_coords_t right_block_left;
+	aligned_coords_t right_block_right;
+} indel_t;
+
+typedef struct indel_map_s
+{
+	vector< size_t > s1_l;	/**< left block mapping for sequence 1 */
+	vector< size_t > s1_r;	/**< left block mapping for sequence 1 */
+	vector< size_t > s2_l;	/**< right block mapping for sequence 2 */
+	vector< size_t > s2_r;	/**< right block mapping for sequence 2 */
+} indel_map_t;
+
+const size_t NO_INDEL = (std::numeric_limits<size_t>::max)();
+
+bool checkCollinear( const aligned_coords_t& a, const aligned_coords_t& b )
+{
+	if( a.pos1 - b.pos1 > 0 && a.pos2 - b.pos2 > 0 )
+		return true;
+	if( a.pos1 - b.pos1 < 0 && a.pos2 - b.pos2 < 0 )
+		return true;
+	if( a.pos1 - b.pos1 == 0 && a.pos2 - b.pos2 == 0 )
+		return true;
+	return false;
+}
+
+void constructIndelList( const vector< aligned_coords_t >& coords, vector< indel_t >& indels, indel_map_t& imap,
+						size_t seq1_size, size_t seq2_size)
+{
+	indels.clear();
+	// skip any leading gaps
+	size_t cI = 0;
+	while( cI < coords.size() && (coords[ cI ].pos1 == 0 || coords[ cI ].pos2 == 0) )
+		cI++;
+	if(cI >= coords.size())
+		return;	// nothing aligned, so no indels in this pair
+
+	indel_t cur_ind;
+	cur_ind.right_block_left = coords[cI];
+	size_t prevI = cI;
+	bool first = true;
+	for( cI++; cI < coords.size(); cI++ )
+	{
+		// skip gaps
+		while( cI < coords.size() && (coords[ cI ].pos1 == 0 || coords[ cI ].pos2 == 0) )
+			cI++;
+		if(cI >= coords.size() || 
+			(coords[cI].pos1 - coords[prevI].pos1 == 1 && coords[cI].pos2 - coords[prevI].pos2 == 1))
+		{
+			if( cI < coords.size() )
+				prevI = cI;
+			continue;	// still in an aligned block
+		}
+
+		cur_ind.right_block_right = coords[prevI];
+		if(!first)
+			indels.push_back( cur_ind );
+		first = false;
+		if(!checkCollinear(coords[cI], coords[prevI]))
+		{
+			// hit an LCB boundary
+			prevI = cI;
+			first = true;
+			continue;
+		}
+		// hit a gap
+		cur_ind.left_block_left = cur_ind.right_block_left;
+		cur_ind.left_block_right = coords[prevI];
+		cur_ind.right_block_left = coords[cI];
+		prevI = cI;
+	}
+
+	// get the last one
+	cur_ind.right_block_right = coords[prevI];
+	if(!first)
+		indels.push_back( cur_ind );
+
+	// create sequence position to indel ID maps
+	imap.s1_l.clear();
+	imap.s1_l.resize( seq1_size+1, NO_INDEL );
+	imap.s1_r.clear();
+	imap.s1_r.resize( seq1_size+1, NO_INDEL );
+	imap.s2_l.clear();
+	imap.s2_l.resize( seq2_size+1, NO_INDEL );
+	imap.s2_r.clear();
+	imap.s2_r.resize( seq2_size+1, NO_INDEL );
+	for( size_t i = 0; i < indels.size(); i++ )
+	{
+		size_t s = min( abs(indels[i].left_block_left.pos1), abs(indels[i].left_block_right.pos1) );
+		size_t e = max( abs(indels[i].left_block_left.pos1), abs(indels[i].left_block_right.pos1) );
+		for( size_t j = s; j <= e; j++ )
+			imap.s1_l[j] = i;
+		s = min( abs(indels[i].right_block_left.pos1), abs(indels[i].right_block_right.pos1) );
+		e = max( abs(indels[i].right_block_left.pos1), abs(indels[i].right_block_right.pos1) );
+		for( size_t j = s; j <= e; j++ )
+			imap.s1_r[j] = i;
+
+		s = min( abs(indels[i].left_block_left.pos2), abs(indels[i].left_block_right.pos2) );
+		e = max( abs(indels[i].left_block_left.pos2), abs(indels[i].left_block_right.pos2) );
+		for( size_t j = s; j <= e; j++ )
+			imap.s2_l[j] = i;
+		s = min( abs(indels[i].right_block_left.pos2), abs(indels[i].right_block_right.pos2) );
+		e = max( abs(indels[i].right_block_left.pos2), abs(indels[i].right_block_right.pos2) );
+		for( size_t j = s; j <= e; j++ )
+			imap.s2_r[j] = i;
+	}
+}
+
+// sets seq1 to be the reference genome -- always positive values
+void homogenizeParity( vector< aligned_coords_t >& coords )
+{
+	for( size_t i = 0; i < coords.size(); i++ )
+		if( coords[i].pos1 < 0 )
+		{
+			coords[i].pos1 *= -1;
+			coords[i].pos2 *= -1;
+		}
+		AlignedCoordSeqIComparator acsc;
+		sort( coords.begin(), coords.end(), acsc );
+}
+
+void computeIndelAccuracy( IntervalList& correct, IntervalList& calculated, vector< string >& evolved_seqs, vector< gnSequence* >& seq_table )
+{	
+	// how to do this?
+	// reduce a pairwise alignment into ungapped blocks
+	double indel_sp_truepos = 0;
+	double indel_sp_falsepos = 0;
+	double indel_sp_falseneg = 0;
+	vector< int > indel_bounds;
+	uint seqI = 0;
+	uint seqJ = 0;
 
 
+	for( seqI = 0; seqI < seq_table.size(); seqI++ ){
+		for( seqJ = seqI+1; seqJ < seq_table.size(); seqJ++ ){
+			//
+			// the correct coordinate matrix is expected to have one entry for
+			// each character in seqI, plus an arbitrary number of "zero" entries
+			// for other sequences (seqJ > seqI) that couldn't align to anything
+			// in seqI
+			//
+			vector< aligned_coords_t > cor;
+			constructCoordList( seqI, seqJ, correct, cor, seq_table );
+			homogenizeParity( cor );
 
+			//
+			// the calculated alignment is expected to account for every residue
+			// at least once, either aligning it to another residue or a gap
+			//
+			vector< aligned_coords_t > calc;
+			constructCoordList( seqI, seqJ, calculated, calc, seq_table );
+			homogenizeParity( calc );
 
+			vector< indel_t > cor_indels;
+			indel_map_t cor_map;
+			constructIndelList( cor, cor_indels, cor_map, evolved_seqs[seqI].size(), evolved_seqs[seqJ].size() );
 
+			vector< indel_t > calc_indels;
+			indel_map_t calc_map;
+			constructIndelList( calc, calc_indels, calc_map, evolved_seqs[seqI].size(), evolved_seqs[seqJ].size() );
 
+			// for each indel in the true alignment, check whether it satisfies the
+			// criteria for a TP in the predicted alignment:
+			// it must have at least one correctly aligned nucleotide pair in the left
+			// and right flanking blocks, and one nucleotide correctly aligned to a gap
+			// within the indel.
+			size_t cur_indel_tp = 0;
+			for( size_t corI = 0; corI < cor_indels.size(); corI++ )
+			{
+				// find the nearest corresponding indel in calc_indels
+				size_t calcI_left = 0;
+				size_t calcI_right = 0;
+				int64 lI;
+				for( lI = cor_indels[corI].left_block_right.pos1; lI >= cor_indels[corI].left_block_left.pos1; lI-- )
+				{
+					calcI_left = calc_map.s1_l[abs(lI)];
+					if( calcI_left == NO_INDEL)
+						continue;	// nothing to see here
+					else{
+						// check whether the aligned positions have the same generalized offset
+						// i.e. if they're on the same diagonal.  if so, then we've got a hit
+						int64 cor_diag = cor_indels[corI].left_block_left.pos1 - cor_indels[corI].left_block_left.pos2;
+						int64 calc_diag = calc_indels[calcI_left].left_block_left.pos1 - calc_indels[calcI_left].left_block_left.pos2;
+						if( cor_diag == calc_diag )
+							break;
+					}
+				}
+				// did we find a match to the left diagonal?
+				if( lI < cor_indels[corI].left_block_right.pos1 )
+					continue;
+
+				// find the nearest indel in calc_indels corresponding to the right-side block
+				int64 rI;
+				for( rI = cor_indels[corI].right_block_left.pos1; rI <= cor_indels[corI].right_block_right.pos1; rI++ )
+				{
+					calcI_right = calc_map.s1_r[abs(rI)];
+					if( calcI_right == NO_INDEL)
+						continue;	// nothing to see here
+					else{
+						// check whether the aligned positions have the same generalized offset
+						// i.e. if they're on the same diagonal.  if so, then we've got a hit
+						int64 cor_diag = cor_indels[corI].right_block_left.pos1 - cor_indels[corI].right_block_left.pos2;
+						int64 calc_diag = calc_indels[calcI_right].right_block_left.pos1 - calc_indels[calcI_right].right_block_left.pos2;
+						if( cor_diag == calc_diag )
+							break;
+					}
+				}
+				// did we find a match to the right diagonal?
+				if( rI > cor_indels[corI].right_block_right.pos1 )
+					continue;
+
+				// did we correctly align at least one site to a gap?
+				bool good = 
+					(calc_indels[calcI_left].left_block_right.pos1 + 1 < cor_indels[corI].right_block_left.pos1 &&
+					calc_indels[calcI_right].right_block_left.pos1 - 1 > cor_indels[corI].left_block_right.pos1 ) ||
+					(calc_indels[calcI_left].left_block_right.pos2 + 1 < cor_indels[corI].right_block_left.pos2 &&
+					calc_indels[calcI_right].right_block_left.pos2 - 1 > cor_indels[corI].left_block_right.pos2);
+
+				if(good)
+				{
+					cur_indel_tp++;
+					indel_bounds.push_back(cor_indels[corI].left_block_right.pos1 - calc_indels[calcI_left].left_block_right.pos1);
+					indel_bounds.push_back(calc_indels[calcI_right].right_block_left.pos1 - cor_indels[corI].right_block_left.pos1);
+				}
+			}
+			indel_sp_falseneg += cor_indels.size() - cur_indel_tp;
+			indel_sp_falsepos += calc_indels.size() - cur_indel_tp;
+			indel_sp_truepos += cur_indel_tp;
+		}
+	}
+
+	cout << "Indel SP truepos: " << indel_sp_truepos << endl;
+	cout << "Indel SP falsepos: " << indel_sp_falsepos << endl;
+	cout << "Indel SP falseneg: " << indel_sp_falseneg << endl;
+	cout << "Indel SP sensitivity: " << ((double)indel_sp_truepos/(double)(indel_sp_truepos+indel_sp_falseneg)) << endl;
+	cout << "Indel SP PPV: " << ((double)indel_sp_truepos/(double)(indel_sp_truepos+indel_sp_falsepos)) << endl;
+	std::sort( indel_bounds.begin(), indel_bounds.end() );
+	int min = 0;
+	int q1 = 0;
+	int med = 0;
+	int q3 = 0;
+	int max = 0;
+	double mean = 0;
+	double var = 0;
+	if(indel_bounds.size() > 0)
+	{
+		min = indel_bounds.front();
+		q1 = indel_bounds[ indel_bounds.size() * 0.25 ];
+		med = indel_bounds[ indel_bounds.size() * 0.5 ];
+		q3 = indel_bounds[ indel_bounds.size() * 0.75 ];
+		max = indel_bounds.back();
+		for( size_t i = 0; i < indel_bounds.size(); i++ )
+			mean += indel_bounds[i];
+		mean /= (double)(indel_bounds.size());
+		for( size_t i = 0; i < indel_bounds.size(); i++ )
+			var += (mean - (double)indel_bounds[i])*(mean - (double)indel_bounds[i]);
+		var /= (double)(indel_bounds.size());
+	}
+	cout << "Indel boundary prediction summary statistics:\n";
+	cout << "min: " << min << endl;
+	cout << "q1: " << q1 << endl;
+	cout << "median: " << med << endl;
+	cout << "q1: " << q3 << endl;
+	cout << "max: " << max << endl;
+	cout << "mean: " << mean << endl;
+	cout << "variance: " << var << endl;
+}
 
 
 
@@ -1012,6 +1102,8 @@ int main( int argc, char* argv[] ){
 	}
 	
 	compareAlignments( correct_ivs, calculated_ivs, evolved_seqs, seq_table );
+
+	computeIndelAccuracy( correct_ivs, calculated_ivs, evolved_seqs, seq_table );
 
 	if( score_lcbs )
 		computeLCBaccuracy( correct_ivs, calculated_ivs, evolved_seqs, seq_table );
