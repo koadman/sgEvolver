@@ -487,6 +487,11 @@ void computeLCBaccuracy( IntervalList& correct, IntervalList& calculated, vector
 				if( correct[corI].LeftEnd(seqI) == NO_MATCH || correct[corI].LeftEnd(seqJ) == NO_MATCH )
 					continue;
 				MatchProjectionAdapter mpa_tmp( &correct[corI], projection );
+				vector< bitset_t > mpa_aln;
+				mpa_tmp.GetAlignment(mpa_aln);
+				bitset_t intersect = mpa_aln[0] & mpa_aln[1];
+				if(!intersect.any())
+					continue;	// nothing was aligned among seqI and seqJ in this interval, so skip it!
 				cor_mpa_list.push_back( mpa_tmp.Copy() );
 				if( cor_mpa_list.back()->Orientation(0) == AbstractMatch::reverse )
 					cor_mpa_list.back()->Invert();
@@ -496,6 +501,11 @@ void computeLCBaccuracy( IntervalList& correct, IntervalList& calculated, vector
 				if( calculated[calcI].LeftEnd(seqI) == NO_MATCH || calculated[calcI].LeftEnd(seqJ) == NO_MATCH )
 					continue;
 				MatchProjectionAdapter mpa_tmp( &calculated[calcI], projection );
+				vector< bitset_t > mpa_aln;
+				mpa_tmp.GetAlignment(mpa_aln);
+				bitset_t intersect = mpa_aln[0] & mpa_aln[1];
+				if(!intersect.any())
+					continue;	// nothing was aligned among seqI and seqJ in this interval, so skip it!
 				calc_mpa_list.push_back( mpa_tmp.Copy() );
 				if( calc_mpa_list.back()->Orientation(0) == AbstractMatch::reverse )
 					calc_mpa_list.back()->Invert();
@@ -570,7 +580,7 @@ void computeLCBaccuracy( IntervalList& correct, IntervalList& calculated, vector
 				bp_sp_possible++;
 
 				int64 lend_seqI = cor_pair_adj[cor_ivI].left_end[0];
-				int64 rend_seqI = cor_pair_adj[cor_ivI].right_end[0];
+				int64 rend_seqI = cor_pair_adj[cor_ivI].right_end[0]-1;
 
 				aligned_coords_t act_left;
 				aligned_coords_t act_right;
@@ -777,13 +787,26 @@ typedef struct indel_map_s
 
 const size_t NO_INDEL = (std::numeric_limits<size_t>::max)();
 
+void printIndel( indel_t i )
+{
+	cerr << "i.left_block_left.pos1 " << i.left_block_left.pos1 << endl;
+	cerr << "i.left_block_right.pos1 " << i.left_block_right.pos1 << endl;
+	cerr << "--\n";
+	cerr << "i.right_block_left.pos1 " << i.right_block_left.pos1 << endl;
+	cerr << "i.right_block_right.pos1 " << i.right_block_right.pos1 << endl;
+	cerr << "**\n";
+	cerr << "i.left_block_left.pos2 " << i.left_block_left.pos2 << endl;
+	cerr << "i.left_block_right.pos2 " << i.left_block_right.pos2 << endl;
+	cerr << "i.right_block_left.pos2 " << i.right_block_left.pos2 << endl;
+	cerr << "i.right_block_right.pos2 " << i.right_block_right.pos2 << endl;
+}
+
 bool checkCollinear( const aligned_coords_t& a, const aligned_coords_t& b )
 {
-	if( a.pos1 - b.pos1 > 0 && a.pos2 - b.pos2 > 0 )
-		return true;
-	if( a.pos1 - b.pos1 < 0 && a.pos2 - b.pos2 < 0 )
-		return true;
-	if( a.pos1 - b.pos1 == 0 && a.pos2 - b.pos2 == 0 )
+	if( (a.pos2 > 0 && b.pos2 < 0) || (a.pos2 < 0 && b.pos2 > 0) )
+		return false;
+	if( (a.pos1 >= b.pos1 && a.pos2 >= b.pos2 ) ||
+		(a.pos1 <= b.pos1 && a.pos2 <= b.pos2 ) )
 		return true;
 	return false;
 }
@@ -792,6 +815,17 @@ void constructIndelList( const vector< aligned_coords_t >& coords, vector< indel
 						size_t seq1_size, size_t seq2_size)
 {
 	indels.clear();
+
+	// initialize sequence position to indel ID maps
+	imap.s1_l.clear();
+	imap.s1_l.resize( seq1_size+1, NO_INDEL );
+	imap.s1_r.clear();
+	imap.s1_r.resize( seq1_size+1, NO_INDEL );
+	imap.s2_l.clear();
+	imap.s2_l.resize( seq2_size+1, NO_INDEL );
+	imap.s2_r.clear();
+	imap.s2_r.resize( seq2_size+1, NO_INDEL );
+
 	// skip any leading gaps
 	size_t cI = 0;
 	while( cI < coords.size() && (coords[ cI ].pos1 == 0 || coords[ cI ].pos2 == 0) )
@@ -818,13 +852,23 @@ void constructIndelList( const vector< aligned_coords_t >& coords, vector< indel
 
 		cur_ind.right_block_right = coords[prevI];
 		if(!first)
+		{
+			if(!checkCollinear(cur_ind.left_block_left, cur_ind.left_block_right) ||
+				!checkCollinear(cur_ind.left_block_right, cur_ind.right_block_left) ||
+				!checkCollinear(cur_ind.right_block_left, cur_ind.right_block_right) )
+			{
+				printIndel(cur_ind);
+				cerr << "ohshit\n";
+			}
 			indels.push_back( cur_ind );
+		}
 		first = false;
 		if(!checkCollinear(coords[cI], coords[prevI]))
 		{
 			// hit an LCB boundary
 			prevI = cI;
 			first = true;
+			cur_ind.right_block_left = coords[cI];	// update this so left_block_left gets set properly later
 			continue;
 		}
 		// hit a gap
@@ -840,14 +884,6 @@ void constructIndelList( const vector< aligned_coords_t >& coords, vector< indel
 		indels.push_back( cur_ind );
 
 	// create sequence position to indel ID maps
-	imap.s1_l.clear();
-	imap.s1_l.resize( seq1_size+1, NO_INDEL );
-	imap.s1_r.clear();
-	imap.s1_r.resize( seq1_size+1, NO_INDEL );
-	imap.s2_l.clear();
-	imap.s2_l.resize( seq2_size+1, NO_INDEL );
-	imap.s2_r.clear();
-	imap.s2_r.resize( seq2_size+1, NO_INDEL );
 	for( size_t i = 0; i < indels.size(); i++ )
 	{
 		size_t s = min( abs(indels[i].left_block_left.pos1), abs(indels[i].left_block_right.pos1) );
@@ -979,12 +1015,67 @@ void computeIndelAccuracy( IntervalList& correct, IntervalList& calculated, vect
 					calc_indels[calcI_right].right_block_left.pos1 - 1 > cor_indels[corI].left_block_right.pos1 ) ||
 					(calc_indels[calcI_left].left_block_right.pos2 + 1 < cor_indels[corI].right_block_left.pos2 &&
 					calc_indels[calcI_right].right_block_left.pos2 - 1 > cor_indels[corI].left_block_right.pos2);
+/*
+				if(!good && (calc_indels[calcI_right].left_block_left.pos2 < 0 ||
+					calc_indels[calcI_left].left_block_right.pos2 < 0) &&
+					calc_indels[calcI_right].right_block_left.pos2 - calc_indels[calcI_left].left_block_right.pos2 != 1)
+				{
+					cerr << "cor_indels[corI].left_block_left.pos1 " << cor_indels[corI].left_block_left.pos1 << endl;
+					cerr << "cor_indels[corI].left_block_right.pos1 " << cor_indels[corI].left_block_right.pos1 << endl;
+					cerr << "--\n";
+					cerr << "cor_indels[corI].right_block_left.pos1 " << cor_indels[corI].right_block_left.pos1 << endl;
+					cerr << "cor_indels[corI].right_block_right.pos1 " << cor_indels[corI].right_block_right.pos1 << endl;
+					cerr << "**\n";
+					cerr << "calc_indels[calcI_left].left_block_left.pos1 " << calc_indels[calcI_left].left_block_left.pos1 << endl;
+					cerr << "calc_indels[calcI_left].left_block_right.pos1 " << calc_indels[calcI_left].left_block_right.pos1 << endl;
+					cerr << "--\n";
+					cerr << "calc_indels[calcI_right].right_block_left.pos1 " << calc_indels[calcI_right].right_block_left.pos1 << endl;
+					cerr << "calc_indels[calcI_right].right_block_right.pos1 " << calc_indels[calcI_right].right_block_right.pos1 << endl;
+					cerr << "**\n";
 
+					cerr << "cor_indels[corI].left_block_left.pos2 " << cor_indels[corI].left_block_left.pos2 << endl;
+					cerr << "cor_indels[corI].left_block_right.pos2 " << cor_indels[corI].left_block_right.pos2 << endl;
+					cerr << "cor_indels[corI].right_block_left.pos2 " << cor_indels[corI].right_block_left.pos2 << endl;
+					cerr << "cor_indels[corI].right_block_right.pos2 " << cor_indels[corI].right_block_right.pos2 << endl;
+					cerr << "calc_indels[calcI_left].left_block_left.pos2 " << calc_indels[calcI_left].left_block_left.pos2 << endl;
+					cerr << "calc_indels[calcI_left].left_block_right.pos2 " << calc_indels[calcI_left].left_block_right.pos2 << endl;
+					cerr << "calc_indels[calcI_right].right_block_left.pos2 " << calc_indels[calcI_right].right_block_left.pos2 << endl;
+					cerr << "calc_indels[calcI_right].right_block_right.pos2 " << calc_indels[calcI_right].right_block_right.pos2 << endl;
+					cerr << "debugme\n";
+				}
+*/
 				if(good)
 				{
 					cur_indel_tp++;
-					indel_bounds.push_back(cor_indels[corI].left_block_right.pos1 - calc_indels[calcI_left].left_block_right.pos1);
-					indel_bounds.push_back(calc_indels[calcI_right].right_block_left.pos1 - cor_indels[corI].right_block_left.pos1);
+					int b1l = cor_indels[corI].left_block_right.pos1 - calc_indels[calcI_left].left_block_right.pos1;
+					int b1r = calc_indels[calcI_right].right_block_left.pos1 - cor_indels[corI].right_block_left.pos1;
+/*					if( abs(b1l) > 500 || abs(b1r) > 500 )
+					{
+					cerr << "cor_indels[corI].left_block_left.pos1 " << cor_indels[corI].left_block_left.pos1 << endl;
+					cerr << "cor_indels[corI].left_block_right.pos1 " << cor_indels[corI].left_block_right.pos1 << endl;
+					cerr << "--\n";
+					cerr << "cor_indels[corI].right_block_left.pos1 " << cor_indels[corI].right_block_left.pos1 << endl;
+					cerr << "cor_indels[corI].right_block_right.pos1 " << cor_indels[corI].right_block_right.pos1 << endl;
+					cerr << "**\n";
+					cerr << "calc_indels[calcI_left].left_block_left.pos1 " << calc_indels[calcI_left].left_block_left.pos1 << endl;
+					cerr << "calc_indels[calcI_left].left_block_right.pos1 " << calc_indels[calcI_left].left_block_right.pos1 << endl;
+					cerr << "--\n";
+					cerr << "calc_indels[calcI_right].right_block_left.pos1 " << calc_indels[calcI_right].right_block_left.pos1 << endl;
+					cerr << "calc_indels[calcI_right].right_block_right.pos1 " << calc_indels[calcI_right].right_block_right.pos1 << endl;
+					cerr << "**\n";
+
+					cerr << "cor_indels[corI].left_block_left.pos2 " << cor_indels[corI].left_block_left.pos2 << endl;
+					cerr << "cor_indels[corI].left_block_right.pos2 " << cor_indels[corI].left_block_right.pos2 << endl;
+					cerr << "cor_indels[corI].right_block_left.pos2 " << cor_indels[corI].right_block_left.pos2 << endl;
+					cerr << "cor_indels[corI].right_block_right.pos2 " << cor_indels[corI].right_block_right.pos2 << endl;
+					cerr << "calc_indels[calcI_left].left_block_left.pos2 " << calc_indels[calcI_left].left_block_left.pos2 << endl;
+					cerr << "calc_indels[calcI_left].left_block_right.pos2 " << calc_indels[calcI_left].left_block_right.pos2 << endl;
+					cerr << "calc_indels[calcI_right].right_block_left.pos2 " << calc_indels[calcI_right].right_block_left.pos2 << endl;
+					cerr << "calc_indels[calcI_right].right_block_right.pos2 " << calc_indels[calcI_right].right_block_right.pos2 << endl;
+						cerr << "debugme\n";
+					}
+*/					indel_bounds.push_back(b1l);
+					indel_bounds.push_back(b1r);
 				}
 			}
 			indel_sp_falseneg += cor_indels.size() - cur_indel_tp;
@@ -1030,7 +1121,7 @@ void computeIndelAccuracy( IntervalList& correct, IntervalList& calculated, vect
 	cout << "min: " << min << endl;
 	cout << "q1: " << q1 << endl;
 	cout << "median: " << med << endl;
-	cout << "q1: " << q3 << endl;
+	cout << "q3: " << q3 << endl;
 	cout << "max: " << max << endl;
 	cout << "mean: " << mean << endl;
 	cout << "variance: " << var << endl;
@@ -1108,11 +1199,11 @@ int main( int argc, char* argv[] ){
 	}
 	
 	compareAlignments( correct_ivs, calculated_ivs, evolved_seqs, seq_table );
-
-	computeIndelAccuracy( correct_ivs, calculated_ivs, evolved_seqs, seq_table );
-
 	if( score_lcbs )
 		computeLCBaccuracy( correct_ivs, calculated_ivs, evolved_seqs, seq_table );
+	computeIndelAccuracy( correct_ivs, calculated_ivs, evolved_seqs, seq_table );
+
+
 /*	
 }catch( gnException& gne ){
 	cerr << gne << endl;
