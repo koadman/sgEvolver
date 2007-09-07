@@ -26,6 +26,10 @@ $mavid_dir="/home/koadman/bin/";
 $lagan_dir="/u/d/a/darling/lagan121/";
 $tba_dir="/u/d/a/darling/tba";
 
+# set this value to the name of the aligner to be tested
+# currently implemented values are mauve, progressiveMauve, tba, mlagan, and mavid
+$aligner = "tba";
+
 # set this to the number of replicate simulations to perform.
 # Each simulation will have the same average mutation parameters 
 # but uses a different random seed
