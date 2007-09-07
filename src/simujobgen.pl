@@ -16,6 +16,7 @@ use strict;
 use POSIX;
 require simujobparams;
 
+
 # do the work:
 # generate job descriptions that can be used to 
 # perform simulation, alignment, and scoring
@@ -119,7 +120,7 @@ for( my $repI = 0; $repI < $simujobparams::repetitions; $repI++ ){
 
 			print PARAMS "\$seq_count=\"$simujobparams::seq_count\";\n";
 			print PARAMS "\@seqnames = (";
-			for( my $i = 0; $i < $seq_count; $i++ )
+			for( my $i = 0; $i < $simujobparams::seq_count; $i++ )
 			{
 				print PARAMS "," if( $i > 0 );
 				print PARAMS "\"".$simujobparams::seqnames[$i]."\"";
@@ -165,6 +166,50 @@ for( my $repI = 0; $repI < $simujobparams::repetitions; $repI++ ){
 }
 
 
+createPbsScripts();
+createCondorScripts();
+
+my $run_description_file = "run_description.txt";
+open( RUN_FILE, ">$run_description_file" );
+# print out the number of cols, rows, and the increments used for each
+print RUN_FILE "$x_valI\t$y_valI\t$simujobparams::x_increment\t$simujobparams::y_increment\n";
+close RUN_FILE;
+
+print "\n\nJob generation complete.\n";
+print "Edit the file mauveAlign.condor to test an aligner other than mauveAligner.\n";
+print "Start jobs with something like 'condor_submit_dag -maxjobs 100 jobs.dag'.\n\n";
+
+exit(0);
+
+sub createPbsScripts
+{
+
+open( QSUB_FILE, ">qsub.sh" );
+for( my $jobI = 0; $jobI < $total_runs; $jobI++ )
+{
+	print QSUB_FILE "cd alignjob.$jobI\n";
+	print QSUB_FILE "qsub -wd -V -l jobfs=1GB,vmem=1GB,walltime=5:00:00 -k n -N $jobI$simujobparams::aligner runjob.sh\n";
+	print QSUB_FILE "cd ..\n\n";
+	open( JOBSH, ">alignjob.$jobI/runjob.sh" );
+	print JOBSH "#!/bin/sh\n";
+	print JOBSH "MYCWD=`pwd`\n";
+	print JOBSH "cp * \$PBS_JOBFS/\n";
+	print JOBSH "cd \$PBS_JOBFS\n";
+	print JOBSH $simujobparams::tools_dir."/simujobrun.pl $simujobparams::aligner\n";
+	print JOBSH "cd \$MYCWD\n";
+	print JOBSH "cp \$PBS_JOBFS/* \$MYCWD/\n";
+	close JOBSH;
+	`chmod 755 alignjob.$jobI/runjob.sh`;
+}
+close QSUB_FILE;
+
+`chmod 755 qsub.sh`;
+
+}
+
+sub createCondorScripts
+{
+
 # print a condor dagman job list
 # submit these jobs with the command "condor_submit_dag -maxjobs ## jobs.dag"
 open( DAGMAN_FILE, ">jobs.dag" );
@@ -187,7 +232,7 @@ print JOB_FILE qq{
 universe       = vanilla
 Executable     = $simujobparams::tools_dir/simujobrun.pl
 # arguments should be one of none, mauve, progressiveMauve, mlagan, slagan, or mavid
-arguments      = progressiveMauve
+arguments      = $simujobparams::aligner
 Requirements   = Memory >= 256 && OpSys == "LINUX" && Arch =="INTEL"
 Rank = Memory >= 512
 #Image_Size     = 900 Meg                                                
@@ -210,19 +255,7 @@ Queue
 
 close JOB_FILE;
 
-			
-
-
-my $run_description_file = "run_description.txt";
-open( RUN_FILE, ">$run_description_file" );
-# print out the number of cols, rows, and the increments used for each
-print RUN_FILE "$x_valI\t$y_valI\t$simujobparams::x_increment\t$simujobparams::y_increment\n";
-close RUN_FILE;
-
-print "\n\nJob generation complete.\n";
-print "Edit the file mauveAlign.condor to test an aligner other than mauveAligner.\n";
-print "Start jobs with something like 'condor_submit_dag -maxjobs 100 jobs.dag'.\n\n";
-
+}			
 
 sub scaleTree
 {
