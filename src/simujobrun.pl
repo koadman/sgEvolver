@@ -247,7 +247,29 @@ sub alignProgressiveMauve {
 }
 
 sub alignMlagan {
+	$xmfa_alignment = "mlagan.dat";
+	push( @delete_files, $xmfa_alignment );
 
+# split up the input sequences into one file per sequence
+	my $mfa_to_multi_cl = "$simujobparams::tools_dir/mfaToMultiFiles $simujobparams::evolved_seqs_fname";
+	my $rval = executeCommand( $mfa_to_multi_cl, "mfa_to_multi.out", "mfa_to_multi.err" );
+	die "Failure in mfaToMultiFiles" if( $rval != 0 );
+# read the guide tree and remove branch lengths and commas
+	open( TREEFILE, "test.tree" );
+	my $tree = <TREEFILE>;
+	$tree = makeTBAtree($tree);
+	close TREEFILE;
+# set the path for lagan
+	$ENV{"LAGAN_DIR"} = $simujobparams::lagan_dir;
+
+	my $mlagan_cl = "$simujobparams::lagan_dir/mlagan Taxon* -tree \"$tree\"";
+        $rval = executeCommand( $mlagan_cl, "mlagan.out", "mlagan.err" );
+        die "Failure in mlagan" if( $rval != 0 );
+	`rm Taxon*`;
+	`rm *anch*`;	
+	my $xmfa_cl = "$simujobparams::tools_dir/mfa2xmfa mlagan.mfa $xmfa_alignment";
+	$rval = executeCommand( $xmfa_cl, "mfa2xmfa.out", "mfa2xmfa.err" );
+	die "Failure in mfa2xmfa" if( $rval != 0 );
 }
 
 sub alignSlagan {
