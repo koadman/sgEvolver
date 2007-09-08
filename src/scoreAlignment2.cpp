@@ -1078,7 +1078,7 @@ void computeIndelAccuracy( IntervalList& correct, IntervalList& calculated, vect
 */					indel_bounds.push_back(b1l);
 					indel_bounds.push_back(b1r);
 
-					int g1size = cor_indels[corI].left_block_right.pos1 - cor_indels[corI].right_block_left.pos1 - 1;
+					int g1size = cor_indels[corI].right_block_left.pos1 - cor_indels[corI].left_block_right.pos1 - 1;
 					int g2size = abs(cor_indels[corI].left_block_right.pos2 - cor_indels[corI].right_block_left.pos2) - 1;
 					gap_sizes.push_back( make_pair( g1size, g2size ) );
 					gap_sizes.push_back( make_pair( g1size, g2size ) );	// add once for each indel bound 
