@@ -262,12 +262,13 @@ sub alignMlagan {
 # set the path for lagan
 	$ENV{"LAGAN_DIR"} = $simujobparams::lagan_dir;
 
+	push( @delete_files, "mlagan.out" );
 	my $mlagan_cl = "$simujobparams::lagan_dir/mlagan Taxon* -tree \"$tree\"";
         $rval = executeCommand( $mlagan_cl, "mlagan.out", "mlagan.err" );
         die "Failure in mlagan" if( $rval != 0 );
 	`rm Taxon*`;
 	`rm *anch*`;	
-	my $xmfa_cl = "$simujobparams::tools_dir/mfa2xmfa mlagan.mfa $xmfa_alignment";
+	my $xmfa_cl = "$simujobparams::tools_dir/mfa2xmfa mlagan.out $xmfa_alignment";
 	$rval = executeCommand( $xmfa_cl, "mfa2xmfa.out", "mfa2xmfa.err" );
 	die "Failure in mfa2xmfa" if( $rval != 0 );
 }
