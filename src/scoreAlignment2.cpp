@@ -1087,11 +1087,11 @@ void computeIndelAccuracy( IntervalList& correct, IntervalList& calculated, vect
 	cout << "Indel SP truepos: " << indel_sp_truepos << endl;
 	cout << "Indel SP falsepos: " << indel_sp_falsepos << endl;
 	cout << "Indel SP falseneg: " << indel_sp_falseneg << endl;
-	double sens = 0;
+	double sens = 1;
 	if( indel_sp_truepos+indel_sp_falseneg > 0 )
 		sens = (double)indel_sp_truepos/(double)(indel_sp_truepos+indel_sp_falseneg);
 	cout << "Indel SP sensitivity: " << sens << endl;
-	double ppv = 0;
+	double ppv = 1;
 	if( indel_sp_truepos+indel_sp_falsepos > 0 )
 		ppv = (double)indel_sp_truepos/(double)(indel_sp_truepos+indel_sp_falsepos);
 	cout << "Indel SP PPV: " << ppv << endl;
