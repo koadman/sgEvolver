@@ -927,6 +927,7 @@ void computeIndelAccuracy( IntervalList& correct, IntervalList& calculated, vect
 	double indel_sp_falsepos = 0;
 	double indel_sp_falseneg = 0;
 	vector< int > indel_bounds;
+	vector< pair< int, int > > gap_sizes;
 	uint seqI = 0;
 	uint seqJ = 0;
 
@@ -1076,6 +1077,11 @@ void computeIndelAccuracy( IntervalList& correct, IntervalList& calculated, vect
 					}
 */					indel_bounds.push_back(b1l);
 					indel_bounds.push_back(b1r);
+
+					int g1size = cor_indels[corI].left_block_right.pos1 - cor_indels[corI].right_block_left.pos1 - 1;
+					int g2size = abs(cor_indels[corI].left_block_right.pos2 - cor_indels[corI].right_block_left.pos2) - 1;
+					gap_sizes.push_back( make_pair( g1size, g2size ) );
+					gap_sizes.push_back( make_pair( g1size, g2size ) );	// add once for each indel bound 
 				}
 			}
 			indel_sp_falseneg += cor_indels.size() - cur_indel_tp;
@@ -1095,6 +1101,13 @@ void computeIndelAccuracy( IntervalList& correct, IntervalList& calculated, vect
 	if( indel_sp_truepos+indel_sp_falsepos > 0 )
 		ppv = (double)indel_sp_truepos/(double)(indel_sp_truepos+indel_sp_falsepos);
 	cout << "Indel SP PPV: " << ppv << endl;
+
+	// write out the indel boundary/size statistics
+	ofstream indel_bounds_out( "indel_bound_error_by_gap_size.txt" );
+	for( size_t i = 0; i < indel_bounds.size(); i+=2 )
+		indel_bounds_out << indel_bounds[i] << '\t' << indel_bounds[i+1] << '\t' << gap_sizes[i].first << '\t' << gap_sizes[i].second << endl;
+	indel_bounds_out.close();
+
 	std::sort( indel_bounds.begin(), indel_bounds.end() );
 	int min = 0;
 	int q1 = 0;
