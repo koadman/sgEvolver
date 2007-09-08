@@ -751,9 +751,9 @@ void computeLCBaccuracy( IntervalList& correct, IntervalList& calculated, vector
 			for( size_t lcbI = 0; lcbI < left_dists(seqI,seqJ).size(); ++lcbI )
 			{
 				if( left_dists(seqI,seqJ)[lcbI] != (std::numeric_limits<double>::max)() )
-					all_dists.push_back( genome::absolut( left_dists(seqI,seqJ)[lcbI] ));
+					all_dists.push_back( (gnSeqI)genome::absolut( left_dists(seqI,seqJ)[lcbI] ));
 				if( right_dists(seqI,seqJ)[lcbI] != (std::numeric_limits<double>::max)() )
-					all_dists.push_back( genome::absolut( right_dists(seqI,seqJ)[lcbI] ) );
+					all_dists.push_back( (gnSeqI)genome::absolut( right_dists(seqI,seqJ)[lcbI] ) );
 			}
 		}
 	}
@@ -1106,9 +1106,9 @@ void computeIndelAccuracy( IntervalList& correct, IntervalList& calculated, vect
 	if(indel_bounds.size() > 0)
 	{
 		min = indel_bounds.front();
-		q1 = indel_bounds[ indel_bounds.size() * 0.25 ];
-		med = indel_bounds[ indel_bounds.size() * 0.5 ];
-		q3 = indel_bounds[ indel_bounds.size() * 0.75 ];
+		q1 = indel_bounds[ (size_t)(indel_bounds.size() * 0.25) ];
+		med = indel_bounds[ (size_t)(indel_bounds.size() * 0.5) ];
+		q3 = indel_bounds[ (size_t)(indel_bounds.size() * 0.75) ];
 		max = indel_bounds.back();
 		for( size_t i = 0; i < indel_bounds.size(); i++ )
 			mean += indel_bounds[i];
