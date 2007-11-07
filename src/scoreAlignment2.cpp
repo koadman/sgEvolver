@@ -987,7 +987,7 @@ void computeIndelAccuracy( IntervalList& correct, IntervalList& calculated, vect
 					}
 				}
 				// did we find a match to the left diagonal?
-				if( lI < cor_indels[corI].left_block_right.pos1 )
+				if( lI < cor_indels[corI].left_block_left.pos1 )
 					continue;
 
 				// find the nearest indel in calc_indels corresponding to the right-side block
@@ -1016,66 +1016,12 @@ void computeIndelAccuracy( IntervalList& correct, IntervalList& calculated, vect
 					calc_indels[calcI_right].right_block_left.pos1 - 1 > cor_indels[corI].left_block_right.pos1 ) ||
 					(calc_indels[calcI_left].left_block_right.pos2 + 1 < cor_indels[corI].right_block_left.pos2 &&
 					calc_indels[calcI_right].right_block_left.pos2 - 1 > cor_indels[corI].left_block_right.pos2);
-/*
-				if(!good && (calc_indels[calcI_right].left_block_left.pos2 < 0 ||
-					calc_indels[calcI_left].left_block_right.pos2 < 0) &&
-					calc_indels[calcI_right].right_block_left.pos2 - calc_indels[calcI_left].left_block_right.pos2 != 1)
-				{
-					cerr << "cor_indels[corI].left_block_left.pos1 " << cor_indels[corI].left_block_left.pos1 << endl;
-					cerr << "cor_indels[corI].left_block_right.pos1 " << cor_indels[corI].left_block_right.pos1 << endl;
-					cerr << "--\n";
-					cerr << "cor_indels[corI].right_block_left.pos1 " << cor_indels[corI].right_block_left.pos1 << endl;
-					cerr << "cor_indels[corI].right_block_right.pos1 " << cor_indels[corI].right_block_right.pos1 << endl;
-					cerr << "**\n";
-					cerr << "calc_indels[calcI_left].left_block_left.pos1 " << calc_indels[calcI_left].left_block_left.pos1 << endl;
-					cerr << "calc_indels[calcI_left].left_block_right.pos1 " << calc_indels[calcI_left].left_block_right.pos1 << endl;
-					cerr << "--\n";
-					cerr << "calc_indels[calcI_right].right_block_left.pos1 " << calc_indels[calcI_right].right_block_left.pos1 << endl;
-					cerr << "calc_indels[calcI_right].right_block_right.pos1 " << calc_indels[calcI_right].right_block_right.pos1 << endl;
-					cerr << "**\n";
-
-					cerr << "cor_indels[corI].left_block_left.pos2 " << cor_indels[corI].left_block_left.pos2 << endl;
-					cerr << "cor_indels[corI].left_block_right.pos2 " << cor_indels[corI].left_block_right.pos2 << endl;
-					cerr << "cor_indels[corI].right_block_left.pos2 " << cor_indels[corI].right_block_left.pos2 << endl;
-					cerr << "cor_indels[corI].right_block_right.pos2 " << cor_indels[corI].right_block_right.pos2 << endl;
-					cerr << "calc_indels[calcI_left].left_block_left.pos2 " << calc_indels[calcI_left].left_block_left.pos2 << endl;
-					cerr << "calc_indels[calcI_left].left_block_right.pos2 " << calc_indels[calcI_left].left_block_right.pos2 << endl;
-					cerr << "calc_indels[calcI_right].right_block_left.pos2 " << calc_indels[calcI_right].right_block_left.pos2 << endl;
-					cerr << "calc_indels[calcI_right].right_block_right.pos2 " << calc_indels[calcI_right].right_block_right.pos2 << endl;
-					cerr << "debugme\n";
-				}
-*/
 				if(good)
 				{
 					cur_indel_tp++;
 					int b1l = cor_indels[corI].left_block_right.pos1 - calc_indels[calcI_left].left_block_right.pos1;
 					int b1r = calc_indels[calcI_right].right_block_left.pos1 - cor_indels[corI].right_block_left.pos1;
-/*					if( abs(b1l) > 500 || abs(b1r) > 500 )
-					{
-					cerr << "cor_indels[corI].left_block_left.pos1 " << cor_indels[corI].left_block_left.pos1 << endl;
-					cerr << "cor_indels[corI].left_block_right.pos1 " << cor_indels[corI].left_block_right.pos1 << endl;
-					cerr << "--\n";
-					cerr << "cor_indels[corI].right_block_left.pos1 " << cor_indels[corI].right_block_left.pos1 << endl;
-					cerr << "cor_indels[corI].right_block_right.pos1 " << cor_indels[corI].right_block_right.pos1 << endl;
-					cerr << "**\n";
-					cerr << "calc_indels[calcI_left].left_block_left.pos1 " << calc_indels[calcI_left].left_block_left.pos1 << endl;
-					cerr << "calc_indels[calcI_left].left_block_right.pos1 " << calc_indels[calcI_left].left_block_right.pos1 << endl;
-					cerr << "--\n";
-					cerr << "calc_indels[calcI_right].right_block_left.pos1 " << calc_indels[calcI_right].right_block_left.pos1 << endl;
-					cerr << "calc_indels[calcI_right].right_block_right.pos1 " << calc_indels[calcI_right].right_block_right.pos1 << endl;
-					cerr << "**\n";
-
-					cerr << "cor_indels[corI].left_block_left.pos2 " << cor_indels[corI].left_block_left.pos2 << endl;
-					cerr << "cor_indels[corI].left_block_right.pos2 " << cor_indels[corI].left_block_right.pos2 << endl;
-					cerr << "cor_indels[corI].right_block_left.pos2 " << cor_indels[corI].right_block_left.pos2 << endl;
-					cerr << "cor_indels[corI].right_block_right.pos2 " << cor_indels[corI].right_block_right.pos2 << endl;
-					cerr << "calc_indels[calcI_left].left_block_left.pos2 " << calc_indels[calcI_left].left_block_left.pos2 << endl;
-					cerr << "calc_indels[calcI_left].left_block_right.pos2 " << calc_indels[calcI_left].left_block_right.pos2 << endl;
-					cerr << "calc_indels[calcI_right].right_block_left.pos2 " << calc_indels[calcI_right].right_block_left.pos2 << endl;
-					cerr << "calc_indels[calcI_right].right_block_right.pos2 " << calc_indels[calcI_right].right_block_right.pos2 << endl;
-						cerr << "debugme\n";
-					}
-*/					indel_bounds.push_back(b1l);
+					indel_bounds.push_back(b1l);
 					indel_bounds.push_back(b1r);
 
 					int g1size = cor_indels[corI].right_block_left.pos1 - cor_indels[corI].left_block_right.pos1 - 1;
