@@ -114,7 +114,7 @@ void Inverter::getLocation( gnSeqI& start, gnSeqI& len, gnSeqI dest_len ) {
 
 
 // take sequence from donor and insert it into sequences below nodeI
-void Inserter::mutate( node_id_t nodeI, const PhyloTree& tree, Alignment& evolved_alignment ) {
+void Inserter::mutate( node_id_t nodeI, const PhyloTree<TreeNode>& tree, Alignment& evolved_alignment ) {
 	gnSeqI source_start;
 	gnSeqI source_length;
 	gnSeqI dest, dest_col;
@@ -127,7 +127,7 @@ void Inserter::mutate( node_id_t nodeI, const PhyloTree& tree, Alignment& evolve
 		evolved_alignment.checkLengths();
 }
 
-void Inserter::recursiveInsert( node_id_t cur_node, node_id_t insert_node, const PhyloTree& t, 
+void Inserter::recursiveInsert( node_id_t cur_node, node_id_t insert_node, const PhyloTree<TreeNode>& t, 
 		Alignment& evolved_alignment, gnSeqI point, gnSeqI source_left, gnSeqI source_length ){
 	if( cur_node == insert_node ){
 		// insert the actual sequence in this one
@@ -142,7 +142,7 @@ void Inserter::recursiveInsert( node_id_t cur_node, node_id_t insert_node, const
 	}
 }
 
-void Deleter::mutate( node_id_t nodeI, const PhyloTree& tree, Alignment& evolved_alignment ) {
+void Deleter::mutate( node_id_t nodeI, const PhyloTree<TreeNode>& tree, Alignment& evolved_alignment ) {
 	gnSeqI start;
 	gnSeqI length;
 	// nodeI and all sequences below it in the tree should have the same length
@@ -158,7 +158,7 @@ void Deleter::mutate( node_id_t nodeI, const PhyloTree& tree, Alignment& evolved
 		evolved_alignment.checkLengths();
 }
 
-void Deleter::recursiveDelete( node_id_t cur_node, node_id_t insert_node, const PhyloTree& t, Alignment& evolved_alignment, 
+void Deleter::recursiveDelete( node_id_t cur_node, node_id_t insert_node, const PhyloTree<TreeNode>& t, Alignment& evolved_alignment, 
 		gnSeqI left_end, gnSeqI length ){
 	if( cur_node == insert_node )
 		// delete sequence in this one
@@ -171,7 +171,7 @@ void Deleter::recursiveDelete( node_id_t cur_node, node_id_t insert_node, const 
 	}
 }
 
-void Inverter::mutate( node_id_t nodeI, const PhyloTree& tree, Alignment& evolved_alignment ) {
+void Inverter::mutate( node_id_t nodeI, const PhyloTree<TreeNode>& tree, Alignment& evolved_alignment ) {
 	gnSeqI start;
 	gnSeqI length;
 	// nodeI and all sequences below it in the tree should have the same length

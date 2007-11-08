@@ -67,7 +67,7 @@ MutationEvent& MutationEvent::operator=( const MutationEvent& me )
 class AlignmentEvolver {
 public:
 	AlignmentEvolver( vector< MutationEvent >& mutation_events );
-	void evolve( const PhyloTree& tree, Alignment& evolved_alignment, int64 random_seed = -1 );
+	void evolve( const PhyloTree<TreeNode>& tree, Alignment& evolved_alignment, int64 random_seed = -1 );
 protected:
 	vector< MutationEvent >& mut_events;
 };
@@ -77,7 +77,7 @@ mut_events( mutation_events )
 {
 }
 
-void AlignmentEvolver::evolve( const PhyloTree& tree, Alignment& evolved_alignment, int64 random_seed )
+void AlignmentEvolver::evolve( const PhyloTree<TreeNode>& tree, Alignment& evolved_alignment, int64 random_seed )
 {	
 	Alignment& ev = evolved_alignment;
 	
@@ -412,7 +412,7 @@ try{
 	}
 
 	// parse the tree file
-	PhyloTree tree;
+	PhyloTree<TreeNode> tree;
 	tree.readTree( tree_file );
 
 	// parse the alignment file

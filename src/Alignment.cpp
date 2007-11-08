@@ -252,7 +252,7 @@ void Alignment::applyGapInsertion( uint seq, gnSeqI point, gnSeqI length ) {
  * Follows a phylogenetic tree to determine which nodes of the tree need to have
  * regions of sequence inverted.  Performs the inversion on the appropriate sequences
  */
-void recursiveInvert( node_id_t cur_node, node_id_t invert_node, const PhyloTree& t,
+void recursiveInvert( node_id_t cur_node, node_id_t invert_node, const PhyloTree<TreeNode>& t,
 	vector< LCB >& lcb_list, vector< uint >& first_lcbs, uint left_lcb, uint right_lcb ){
 
 	if( cur_node == invert_node ){
@@ -326,7 +326,7 @@ void filterGaps( const string& gapped_seq, string& ungapped_seq ){
  *
  * Caution:  No user serviceable parts inside
  */
-void Alignment::applyInversions( const PhyloTree& t ) {
+void Alignment::applyInversions( const PhyloTree<TreeNode>& t ) {
 	if( alignment.size() != 1 )
 		Throw_gnExMsg( EvolutionError(), "Inversions can only be applied once\n" );
 	
@@ -600,7 +600,7 @@ public:
 	}
 };
 
-void Alignment::writeAlignment( ostream& os, const PhyloTree& t, boolean write_ancestors ) const {
+void Alignment::writeAlignment( ostream& os, const PhyloTree<TreeNode>& t, boolean write_ancestors ) const {
 
 	uint seq_count = alignment[ 0 ].sequences.size();
 	uint seqI;
@@ -660,7 +660,7 @@ void Alignment::writeAlignment( ostream& os, const PhyloTree& t, boolean write_a
 
 }
 
-void Alignment::writeEvolvedSequences( ostream& os, const PhyloTree& t, boolean write_ancestors ) const {
+void Alignment::writeEvolvedSequences( ostream& os, const PhyloTree<TreeNode>& t, boolean write_ancestors ) const {
 	// write out the ungapped evolved sequences
 	uint seq_count = alignment[ 0 ].sequences.size();
 	uint seqI;

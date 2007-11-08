@@ -6,7 +6,7 @@
 #define __Mutator_h__
 
 #include "libMems/gnAlignedSequences.h"
-#include "PhyloTree.h"
+#include "libMems/PhyloTree.h"
 #include <vector>
 #include "gnStringSource.h"
 #include "libGenome/gnSequence.h"
@@ -36,7 +36,7 @@ public:
 	 *								If there are multiple entries in the vector, the sequence
 	 *								is not collinear.
 	 */
-	virtual void mutate( node_id_t nodeI, const PhyloTree& tree, Alignment& evolved_alignment ) = 0;
+	virtual void mutate( node_id_t nodeI, const PhyloTree<TreeNode>& tree, Alignment& evolved_alignment ) = 0;
 protected:
 	mems::gnAlignedSequences& donor;
 	std::vector< genome::gnSequence > donor_table;
@@ -62,9 +62,9 @@ donor( donor_seqs )
 class Inserter : public Mutator {
 public:
 	Inserter( mems::gnAlignedSequences& donor_seqs );
-	void mutate( node_id_t nodeI, const PhyloTree& tree, Alignment& evolved_alignment );
+	void mutate( node_id_t nodeI, const PhyloTree<TreeNode>& tree, Alignment& evolved_alignment );
 protected:
-	void recursiveInsert( node_id_t cur_node, node_id_t insert_node, const PhyloTree& t, 
+	void recursiveInsert( node_id_t cur_node, node_id_t insert_node, const PhyloTree<TreeNode>& t, 
 		Alignment& evolved_alignment, gnSeqI point, gnSeqI source_left, gnSeqI source_length );
 	virtual void getLocation( gnSeqI& source_start, gnSeqI& source_len, gnSeqI& dest, gnSeqI dest_len ) = 0;
 };
@@ -127,9 +127,9 @@ protected:
 class Deleter : public Mutator {
 public:
 	Deleter( mems::gnAlignedSequences& donor_seqs );
-	void mutate( node_id_t nodeI, const PhyloTree& tree, Alignment& evolved_alignment );
+	void mutate( node_id_t nodeI, const PhyloTree<TreeNode>& tree, Alignment& evolved_alignment );
 protected:
-	void recursiveDelete( node_id_t cur_node, node_id_t insert_node, const PhyloTree& t,
+	void recursiveDelete( node_id_t cur_node, node_id_t insert_node, const PhyloTree<TreeNode>& t,
 		Alignment& evolved_alignment, gnSeqI left_end, gnSeqI len );
 	virtual void getLocation( gnSeqI& start, gnSeqI& len, gnSeqI dest_len ) = 0;
 };
@@ -197,9 +197,9 @@ public:
 	Inverter( const Inverter& i );
 	Inverter& operator=( const Inverter& i );
 
-	void mutate( node_id_t nodeI, const PhyloTree& tree, Alignment& evolved_alignment );
+	void mutate( node_id_t nodeI, const PhyloTree<TreeNode>& tree, Alignment& evolved_alignment );
 protected:
-	void recursiveInvert( node_id_t cur_node, node_id_t insert_node, const PhyloTree& t,
+	void recursiveInvert( node_id_t cur_node, node_id_t insert_node, const PhyloTree<TreeNode>& t,
 		Alignment& evolved_alignment, gnSeqI left_end, gnSeqI length );
 	void getLocation( gnSeqI& start, gnSeqI& len, gnSeqI dest_len );
 	gnSeqI size;

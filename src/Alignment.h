@@ -11,7 +11,7 @@
 #include <vector>
 //#include "GappedIntervalSequence.h"
 #include "GisSplayTree.h"
-#include "PhyloTree.h"
+#include "libMems/PhyloTree.h"
 
 #define GappedIntervalSequence GisSplayTree
 
@@ -109,7 +109,7 @@ public:
 	void applyDeletion( uint seq, gnSeqI left_end, gnSeqI length );
 	void applyInsertion( uint seq, gnSeqI point, gnSeqI source_left, gnSeqI source_length );
 	void applyGapInsertion( uint seq, gnSeqI point, gnSeqI length );
-	void applyInversions( const PhyloTree& t );
+	void applyInversions( const PhyloTree<TreeNode>& t );
 	gnSeqI getColumnIndex( gnSeqI seqI, gnSeqI baseI );
 	void getDeletionColumns( uint seq, gnSeqI& left_end, gnSeqI& length );
 
@@ -119,7 +119,7 @@ public:
 	 * @param t		The phylogenetic tree for the aligned sequences
 	 * @param write_ancestors	If set to true, ancestral sequences will be written.  False by default.
 	 */
-	void writeAlignment( std::ostream& os, const PhyloTree& t, boolean write_ancestors = false ) const;
+	void writeAlignment( std::ostream& os, const PhyloTree<TreeNode>& t, boolean write_ancestors = false ) const;
 
 	/**
 	 * Write the fully evolved sequences to a Multi-FastA file
@@ -127,7 +127,7 @@ public:
 	 * @param t		The phylogenetic tree for the sequences
 	 * @param write_ancestors	If set to true, ancestral sequences will be written.  False by default.
 	 */
-	void writeEvolvedSequences( std::ostream& os, const PhyloTree& t, boolean write_ancestors = false ) const;
+	void writeEvolvedSequences( std::ostream& os, const PhyloTree<TreeNode>& t, boolean write_ancestors = false ) const;
 	gnSeqI length() const{ return intervals[ 0 ].length(); }
 	void checkLengths() const;
 protected:
