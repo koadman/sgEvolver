@@ -43,7 +43,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\muscle\;..\..\muscle\libMUSCLE;..\..\libGenome;..\..\libClustalW;..\..\libMems\;..\..\boost\boost_1_34_0\"
+				AdditionalIncludeDirectories=""
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;__GNDEBUG__;_SCL_SECURE_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -64,10 +64,10 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="kernel32.lib rpcrt4.lib wsock32.lib ole32.lib shell32.lib comdlg32.lib gdi32.lib advapi32.lib user32.lib mmc.lib comctl32.lib winmm.lib psapi.lib ..\..\libGenome\lib\genomed.lib ..\..\libClustalW\lib\ClustalWd.lib ..\..\libMems\lib\memsd.lib"
+				AdditionalDependencies="kernel32.lib rpcrt4.lib wsock32.lib ole32.lib shell32.lib comdlg32.lib gdi32.lib advapi32.lib user32.lib mmc.lib comctl32.lib winmm.lib psapi.lib"
 				OutputFile="$(OutDir)/scoreAlignment2d.exe"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="..\..\muscle\lib;&quot;C:\Program Files\Microsoft SDK\Lib&quot;"
+				AdditionalLibraryDirectories="&quot;C:\Program Files\Microsoft SDK\Lib&quot;"
 				IgnoreDefaultLibraryNames="msvcrtd.lib"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(OutDir)/scoreAlignment2.pdb"
@@ -126,7 +126,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\libGenome;..\..\libClustalW;..\..\libMems\;..\..\boost\include\boost-1_33_1"
+				AdditionalIncludeDirectories=""
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;__GNDEBUG__;_SCL_SECURE_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -147,7 +147,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="kernel32.lib rpcrt4.lib wsock32.lib ole32.lib shell32.lib comdlg32.lib gdi32.lib advapi32.lib user32.lib mmc.lib comctl32.lib winmm.lib ..\..\libGenome\lib\genomed.lib ..\..\libClustalW\lib\ClustalWd.lib ..\..\libMems\lib\memsd.lib"
+				AdditionalDependencies="kernel32.lib rpcrt4.lib wsock32.lib ole32.lib shell32.lib comdlg32.lib gdi32.lib advapi32.lib user32.lib mmc.lib comctl32.lib winmm.lib"
 				OutputFile="$(OutDir)/scoreAlignment2d.exe"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="&quot;C:\Program Files\Microsoft SDK\Lib&quot;"
@@ -207,7 +207,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\muscle\;..\..\muscle\libMUSCLE;..\..\libGenome;..\..\libClustalW;..\..\libMems\;..\..\boost\boost_1_34_0\"
+				AdditionalIncludeDirectories=""
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;_SCL_SECURE_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"
@@ -226,10 +226,10 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="kernel32.lib rpcrt4.lib wsock32.lib ole32.lib shell32.lib comdlg32.lib gdi32.lib advapi32.lib user32.lib mmc.lib comctl32.lib winmm.lib psapi.lib ..\..\libGenome\lib\genome.lib ..\..\libClustalW\lib\ClustalW.lib ..\..\libMems\lib\mems.lib"
+				AdditionalDependencies="kernel32.lib rpcrt4.lib wsock32.lib ole32.lib shell32.lib comdlg32.lib gdi32.lib advapi32.lib user32.lib mmc.lib comctl32.lib winmm.lib psapi.lib"
 				OutputFile="$(OutDir)/scoreAlignment2.exe"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="..\..\muscle\lib;&quot;C:\Program Files\Microsoft SDK\Lib&quot;"
+				AdditionalLibraryDirectories="&quot;C:\Program Files\Microsoft SDK\Lib&quot;"
 				IgnoreDefaultLibraryNames="msvcrt.lib"
 				GenerateDebugInformation="true"
 				SubSystem="1"
@@ -288,7 +288,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\libGenome;..\..\libClustalW;..\..\libMems\;..\..\boost\include\boost-1_33_1"
+				AdditionalIncludeDirectories=""
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;_SCL_SECURE_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"
@@ -307,7 +307,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="kernel32.lib rpcrt4.lib wsock32.lib ole32.lib shell32.lib comdlg32.lib gdi32.lib advapi32.lib user32.lib mmc.lib comctl32.lib winmm.lib ..\..\libGenome\lib\genome.lib ..\..\libClustalW\lib\ClustalW.lib ..\..\libMems\lib\mems.lib"
+				AdditionalDependencies="kernel32.lib rpcrt4.lib wsock32.lib ole32.lib shell32.lib comdlg32.lib gdi32.lib advapi32.lib user32.lib mmc.lib comctl32.lib winmm.lib"
 				OutputFile="$(OutDir)/scoreAlignment2.exe"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="&quot;C:\Program Files\Microsoft SDK\Lib&quot;"
@@ -368,7 +368,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\muscle\;..\..\muscle\libMUSCLE;..\..\libGenome;..\..\libClustalW;..\..\libMems\;..\..\boost\boost_1_34_0\"
+				AdditionalIncludeDirectories=""
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;_SCL_SECURE_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"
@@ -387,10 +387,10 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="kernel32.lib rpcrt4.lib wsock32.lib ole32.lib shell32.lib comdlg32.lib gdi32.lib advapi32.lib user32.lib mmc.lib comctl32.lib winmm.lib psapi.lib ..\..\libGenome\lib\genome.lib ..\..\libClustalW\lib\ClustalW.lib ..\..\libMems\lib\mems.lib"
+				AdditionalDependencies="kernel32.lib rpcrt4.lib wsock32.lib ole32.lib shell32.lib comdlg32.lib gdi32.lib advapi32.lib user32.lib mmc.lib comctl32.lib winmm.lib psapi.lib"
 				OutputFile="$(OutDir)/scoreAlignment2.exe"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="..\..\muscle\lib;&quot;C:\Program Files\Microsoft SDK\Lib&quot;"
+				AdditionalLibraryDirectories="&quot;C:\Program Files\Microsoft SDK\Lib&quot;"
 				IgnoreDefaultLibraryNames="msvcrt.lib"
 				GenerateDebugInformation="true"
 				SubSystem="1"
@@ -449,7 +449,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\libGenome;..\..\libClustalW;..\..\libMems\;..\..\boost\include\boost-1_33_1"
+				AdditionalIncludeDirectories=""
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;_SCL_SECURE_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"
@@ -468,7 +468,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="kernel32.lib rpcrt4.lib wsock32.lib ole32.lib shell32.lib comdlg32.lib gdi32.lib advapi32.lib user32.lib mmc.lib comctl32.lib winmm.lib ..\..\libGenome\lib\genome.lib ..\..\libClustalW\lib\ClustalW.lib ..\..\libMems\lib\mems.lib"
+				AdditionalDependencies="kernel32.lib rpcrt4.lib wsock32.lib ole32.lib shell32.lib comdlg32.lib gdi32.lib advapi32.lib user32.lib mmc.lib comctl32.lib winmm.lib"
 				OutputFile="$(OutDir)/scoreAlignment2.exe"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="&quot;C:\Program Files\Microsoft SDK\Lib&quot;"
@@ -529,7 +529,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\muscle\;..\..\muscle\libMUSCLE;..\..\libGenome;..\..\libClustalW;..\..\libMems\;..\..\boost\boost_1_34_0\"
+				AdditionalIncludeDirectories=""
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;_SCL_SECURE_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE"
 				RuntimeLibrary="0"
 				OpenMP="true"
@@ -549,10 +549,10 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="kernel32.lib rpcrt4.lib wsock32.lib ole32.lib shell32.lib comdlg32.lib gdi32.lib advapi32.lib user32.lib mmc.lib comctl32.lib winmm.lib psapi.lib ..\..\libGenome\lib\genome.lib ..\..\libClustalW\lib\ClustalW.lib ..\..\libMems\lib\mems.lib"
+				AdditionalDependencies="kernel32.lib rpcrt4.lib wsock32.lib ole32.lib shell32.lib comdlg32.lib gdi32.lib advapi32.lib user32.lib mmc.lib comctl32.lib winmm.lib psapi.lib"
 				OutputFile="$(OutDir)/scoreAlignment2.exe"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="..\..\muscle\lib;&quot;C:\Program Files\Microsoft SDK\Lib&quot;"
+				AdditionalLibraryDirectories="&quot;C:\Program Files\Microsoft SDK\Lib&quot;"
 				IgnoreDefaultLibraryNames="msvcrt.lib"
 				GenerateDebugInformation="true"
 				SubSystem="1"
@@ -611,7 +611,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\libGenome;..\..\libClustalW;..\..\libMems\;..\..\boost\include\boost-1_33_1"
+				AdditionalIncludeDirectories=""
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;_SCL_SECURE_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE"
 				RuntimeLibrary="0"
 				OpenMP="true"
@@ -631,7 +631,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="kernel32.lib rpcrt4.lib wsock32.lib ole32.lib shell32.lib comdlg32.lib gdi32.lib advapi32.lib user32.lib mmc.lib comctl32.lib winmm.lib ..\..\libGenome\lib\genome.lib ..\..\libClustalW\lib\ClustalW.lib ..\..\libMems\lib\mems.lib"
+				AdditionalDependencies="kernel32.lib rpcrt4.lib wsock32.lib ole32.lib shell32.lib comdlg32.lib gdi32.lib advapi32.lib user32.lib mmc.lib comctl32.lib winmm.lib"
 				OutputFile="$(OutDir)/scoreAlignment2.exe"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="&quot;C:\Program Files\Microsoft SDK\Lib&quot;"
@@ -692,7 +692,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\muscle\;..\..\muscle\libMUSCLE;..\..\libGenome;..\..\libClustalW;..\..\libMems\;..\..\boost\boost_1_34_0\"
+				AdditionalIncludeDirectories=""
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;_SCL_SECURE_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE"
 				RuntimeLibrary="0"
 				OpenMP="true"
@@ -712,10 +712,10 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="kernel32.lib rpcrt4.lib wsock32.lib ole32.lib shell32.lib comdlg32.lib gdi32.lib advapi32.lib user32.lib mmc.lib comctl32.lib winmm.lib psapi.lib ..\..\libGenome\lib\genome.lib ..\..\libClustalW\lib\ClustalW.lib ..\..\libMems\lib\mems.lib"
+				AdditionalDependencies="kernel32.lib rpcrt4.lib wsock32.lib ole32.lib shell32.lib comdlg32.lib gdi32.lib advapi32.lib user32.lib mmc.lib comctl32.lib winmm.lib psapi.lib"
 				OutputFile="$(OutDir)/scoreAlignment2.exe"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="..\..\muscle\lib;&quot;C:\Program Files\Microsoft SDK\Lib&quot;"
+				AdditionalLibraryDirectories="&quot;C:\Program Files\Microsoft SDK\Lib&quot;"
 				IgnoreDefaultLibraryNames="msvcrt.lib"
 				GenerateDebugInformation="true"
 				SubSystem="1"
@@ -774,7 +774,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\libGenome;..\..\libClustalW;..\..\libMems\;..\..\boost\include\boost-1_33_1"
+				AdditionalIncludeDirectories=""
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;_SCL_SECURE_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE"
 				RuntimeLibrary="0"
 				OpenMP="true"
@@ -794,7 +794,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="kernel32.lib rpcrt4.lib wsock32.lib ole32.lib shell32.lib comdlg32.lib gdi32.lib advapi32.lib user32.lib mmc.lib comctl32.lib winmm.lib ..\..\libGenome\lib\genome.lib ..\..\libClustalW\lib\ClustalW.lib ..\..\libMems\lib\mems.lib"
+				AdditionalDependencies="kernel32.lib rpcrt4.lib wsock32.lib ole32.lib shell32.lib comdlg32.lib gdi32.lib advapi32.lib user32.lib mmc.lib comctl32.lib winmm.lib"
 				OutputFile="$(OutDir)/scoreAlignment2.exe"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="&quot;C:\Program Files\Microsoft SDK\Lib&quot;"
