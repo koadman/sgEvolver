@@ -17,7 +17,6 @@
 #include <iostream>
 #include "libGenome/gnFilter.h"
 #include "libMems/IntervalList.h"
-#include "libMems/MemSubsets.h"
 #include "libMems/MatchList.h"
 #include "libMems/GappedAlignment.h"
 #include "libMems/Matrix.h"
@@ -924,10 +923,12 @@ void computeIndelAccuracy( IntervalList& correct, IntervalList& calculated, vect
 	// how to do this?
 	// reduce a pairwise alignment into ungapped blocks
 	double indel_sp_truepos = 0;
+	double indel_sp_perfectpos = 0;
 	double indel_sp_falsepos = 0;
 	double indel_sp_falseneg = 0;
-	vector< int > indel_bounds;
-	vector< pair< int, int > > gap_sizes;
+	vector< pair< int, int > > indel_bounds;	// left and right boundary scores for all indels that were classified TP
+	vector< pair< int, int > > gap_sizes;		// seq_i and seq_j gap sizes for all indels that were classified TP
+	bitset_t perfect_prediction;	// true if there were no intervening indels predicted	
 	uint seqI = 0;
 	uint seqJ = 0;
 
@@ -1021,13 +1022,15 @@ void computeIndelAccuracy( IntervalList& correct, IntervalList& calculated, vect
 					cur_indel_tp++;
 					int b1l = cor_indels[corI].left_block_right.pos1 - calc_indels[calcI_left].left_block_right.pos1;
 					int b1r = calc_indels[calcI_right].right_block_left.pos1 - cor_indels[corI].right_block_left.pos1;
-					indel_bounds.push_back(b1l);
-					indel_bounds.push_back(b1r);
+					indel_bounds.push_back(make_pair( b1l, b1r ) );
 
 					int g1size = cor_indels[corI].right_block_left.pos1 - cor_indels[corI].left_block_right.pos1 - 1;
 					int g2size = abs(cor_indels[corI].left_block_right.pos2 - cor_indels[corI].right_block_left.pos2) - 1;
 					gap_sizes.push_back( make_pair( g1size, g2size ) );
-					gap_sizes.push_back( make_pair( g1size, g2size ) );	// add once for each indel bound 
+
+					// the indel was perfectly predicted if no intervening
+					// indels were predicted.  record a perfect indel
+					perfect_prediction.push_back( calcI_left + 1 == calcI_right );
 				}
 			}
 			indel_sp_falseneg += cor_indels.size() - cur_indel_tp;
@@ -1050,11 +1053,18 @@ void computeIndelAccuracy( IntervalList& correct, IntervalList& calculated, vect
 
 	// write out the indel boundary/size statistics
 	ofstream indel_bounds_out( "indel_bound_error_by_gap_size.txt" );
-	for( size_t i = 0; i < indel_bounds.size(); i+=2 )
-		indel_bounds_out << indel_bounds[i] << '\t' << indel_bounds[i+1] << '\t' << gap_sizes[i].first << '\t' << gap_sizes[i].second << endl;
+	for( size_t i = 0; i < indel_bounds.size(); i++ )
+		indel_bounds_out << indel_bounds[i].first << '\t' << indel_bounds[i].second << '\t' << gap_sizes[i].first << '\t' << gap_sizes[i].second << '\t' << (perfect_prediction[i] ? "p" : "n") << endl;
 	indel_bounds_out.close();
 
-	std::sort( indel_bounds.begin(), indel_bounds.end() );
+	vector< size_t > ib2( indel_bounds.size() * 2 );
+	size_t j = 0;
+	for( size_t i = 0; i < indel_bounds.size(); i++ )
+	{
+		ib2[j++] = indel_bounds[i].first;
+		ib2[j++] = indel_bounds[i].second;
+	}
+	std::sort( ib2.begin(), ib2.end() );
 	int min = 0;
 	int q1 = 0;
 	int med = 0;
@@ -1062,19 +1072,19 @@ void computeIndelAccuracy( IntervalList& correct, IntervalList& calculated, vect
 	int max = 0;
 	double mean = 0;
 	double var = 0;
-	if(indel_bounds.size() > 0)
+	if(ib2.size() > 0)
 	{
-		min = indel_bounds.front();
-		q1 = indel_bounds[ (size_t)(indel_bounds.size() * 0.25) ];
-		med = indel_bounds[ (size_t)(indel_bounds.size() * 0.5) ];
-		q3 = indel_bounds[ (size_t)(indel_bounds.size() * 0.75) ];
-		max = indel_bounds.back();
-		for( size_t i = 0; i < indel_bounds.size(); i++ )
-			mean += indel_bounds[i];
-		mean /= (double)(indel_bounds.size());
-		for( size_t i = 0; i < indel_bounds.size(); i++ )
-			var += (mean - (double)indel_bounds[i])*(mean - (double)indel_bounds[i]);
-		var /= (double)(indel_bounds.size());
+		min = ib2.front();
+		q1 = ib2[ (size_t)(ib2.size() * 0.25) ];
+		med = ib2[ (size_t)(ib2.size() * 0.5) ];
+		q3 = ib2[ (size_t)(ib2.size() * 0.75) ];
+		max = ib2.back();
+		for( size_t i = 0; i < ib2.size(); i++ )
+			mean += ib2[i];
+		mean /= (double)(ib2.size());
+		for( size_t i = 0; i < ib2.size(); i++ )
+			var += (mean - (double)ib2[i])*(mean - (double)ib2[i]);
+		var /= (double)(ib2.size());
 	}
 	cout << "Indel boundary prediction summary statistics:\n";
 	cout << "min: " << min << endl;
