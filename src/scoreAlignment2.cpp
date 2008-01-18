@@ -1030,7 +1030,7 @@ void computeIndelAccuracy( IntervalList& correct, IntervalList& calculated, vect
 
 					// the indel was perfectly predicted if no intervening
 					// indels were predicted.  record a perfect indel
-					perfect_prediction.push_back( calcI_left + 1 == calcI_right );
+					perfect_prediction.push_back( calcI_left == calcI_right );
 				}
 			}
 			indel_sp_falseneg += cor_indels.size() - cur_indel_tp;
