@@ -7,9 +7,9 @@ AM_CXXFLAGS = -DCOMMAND_LINE $(D_CXXFLAGS)
 
 bin_PROGRAMS = sgEvolver scoreAlignment2 mfaToMultiFiles maf2xmfa
 sgEvolver_SOURCES = \
-sgEvolver.cpp Mutator.cpp PhyloTree.cpp Alignment.cpp \
+sgEvolver.cpp Mutator.cpp Alignment.cpp \
 gnGapSource.cpp gnStringSource.cpp Alignment.h \
-gnStringSource.h  PhyloTree.h GisSplayTree.h \
+gnStringSource.h  GisSplayTree.h \
 GappedIntervalSequence.h  gnGapSource.h  Mutator.h \
 twister.c twister.h
 
