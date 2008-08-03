@@ -123,7 +123,12 @@ for( my $repI = 0; $repI < $simujobparams::repetitions; $repI++ ){
 			for( my $i = 0; $i < $simujobparams::seq_count; $i++ )
 			{
 				print PARAMS "," if( $i > 0 );
-				print PARAMS "\"".$simujobparams::seqnames[$i]."\"";
+				if( $i < scalar(@simujobparams::seqnames) )
+				{
+					print PARAMS "\"".$simujobparams::seqnames[$i]."\"";
+				}else{
+					print PARAMS "\"Tx$i\"";
+				}
 			}
 			print PARAMS ")\;\n";
 
@@ -145,7 +150,9 @@ for( my $repI = 0; $repI < $simujobparams::repetitions; $repI++ ){
 			close PARAMS;
 		
 		# generate a tree file
-			my $scaled_tree = scaleTree( $simujobparams::phylogeny, $simujobparams::tree_scale );
+			my $base_tree = $simujobparams::phylogeny;
+			$base_tree = starTree( $base_tree, $simujobparams::seq_count, 1 ) if( $simujobparams::phylogeny eq "star" );
+			my $scaled_tree = scaleTree( $base_tree, $simujobparams::tree_scale );
 			open( TREEOUT, ">$simujobparams::tree_filename" );
 			print TREEOUT $scaled_tree;
 			close TREEOUT;
@@ -282,4 +289,22 @@ sub scaleTree
         return $out;
 }
 
-
+sub starTree
+{
+	my $tree = shift;
+	my $seq_count = shift;
+	my $scale = shift;
+	$tree = "";
+	for( my $seqI = 0; $seqI < $seq_count - 1; $seqI++ )
+	{
+		$tree .= "(";
+	}
+	for( my $seqI = 0; $seqI < $seq_count; $seqI++ )
+	{
+		$tree .= "," unless( $seqI == 0 );
+		$tree .= "Tx$seqI:$scale";
+		$tree .= "):0" unless( $seqI == 0 );
+	}
+	$tree .= ";";
+	return $tree;
+}
