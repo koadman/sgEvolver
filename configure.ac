@@ -1,5 +1,5 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_INIT(sgEvolver, 0.6.0)
+AC_INIT(sgEvolver, 0.7.0)
 
 dnl Get the target and build system types and add appropriate options
 AC_CANONICAL_TARGET
