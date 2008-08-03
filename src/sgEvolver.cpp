@@ -231,7 +231,7 @@ void print_usage( const char* pname ){
  */
 int main( int argc, char* argv[] ){
 
-	char* m_argv[] = {
+	const char* m_argv[] = {
 		"sgEvolver",
 
 /*		"--indel-freq=.1",
