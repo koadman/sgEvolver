@@ -46,6 +46,9 @@ my $rval;
 my $extract_cl = "dd if=$simujobparams::ancestral_donor bs=1 skip=$simujobparams::ancestral_start count=$simujobparams::seq_length";
 executeCommand( $extract_cl, ">$simujobparams::ancestral_seq_name", "ancestral_dd.err" );
 
+		# remove any stale output file
+my $rm_cl = "rm -f $simujobparams::seqgen_out_name";
+executeCommand( $rm_cl, "rm.out", "rm.err" );
 
 		# generate a data set
 my $seqgen_cl = $simujobparams::tools_dir."seq-gen -mHKY -a $simujobparams::gamma_shape -i 0 -z $simujobparams::seqgen_random -f ";
