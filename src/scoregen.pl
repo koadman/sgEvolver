@@ -33,7 +33,11 @@ my @score_measures = ("Sum of pairs accuracy",
 	"Absolute distance, first quartile",
 	"Absolute distance, second quartile",
 	"Absolute distance, third quartile",
-	"Absolute distance, max"
+	"Absolute distance, max",
+	"Indel SP sensitivity",
+	"Indel SP PPV",
+	"mean",
+	"variance"
 );
 
 my @output_filenames = (
@@ -42,6 +46,8 @@ my @output_filenames = (
 "$plot_basename.lcb_sn.ps",
 "$plot_basename.lcb_ppv.ps",
 "$plot_basename.bp_localization.ps",
+"$plot_basename.indel_sn.ps",
+"$plot_basename.indel_ppv.ps"
 );
 
 my @data0;
@@ -62,10 +68,16 @@ my @data7;
 my @count7;
 my @data8;
 my @count8;
+my @data9;
+my @count9;
+my @data10;
+my @count10;
+my @data11;
+my @count11;
 
 # create an array with the score values in it
-my @data_values = (\@data0, \@data1, \@data2, \@data3, \@data4, \@data5, \@data6, \@data7, \@data8);
-my @data_count = (\@count0, \@count1, \@count2, \@count3, \@count4, \@count5, \@count6, \@count7, \@count8);
+my @data_values = (\@data0, \@data1, \@data2, \@data3, \@data4, \@data5, \@data6, \@data7, \@data8, \@data9, \@data10, \@data11);
+my @data_count = (\@count0, \@count1, \@count2, \@count3, \@count4, \@count5, \@count6, \@count7, \@count8, \@count9, \@count10, \@count11);
 
 # initialize a multidimensional array
 for( my $mI = 0; $mI < @score_measures; $mI++ )
@@ -88,15 +100,18 @@ for( my $x_val = 0; $x_val < $simujobparams::x_count; $x_val++ ){
 	        open( SCOREFILE, "$tmp_score" );
 
 		# indexed as given in $score_measures
-		my @scores = (-1, -1, -1, -1, -1, -1, -1, -1, -1);
+		my @scores = (-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1);
 	        while( my $cur_line = <SCOREFILE> ){
 			for( my $mI = 0; $mI < @score_measures; $mI++ )
 			{
 				if( $cur_line =~ /$score_measures[$mI]/ )
 				{
 					my @vals = split( /\:/, $cur_line);
-					$scores[$mI] = $vals[1];
-					chomp $scores[$mI];
+					if($vals[1] =~ /\d+/)
+					{
+						$scores[$mI] = $vals[1];
+						chomp $scores[$mI];
+					}
 				}
 			}
 	        }
@@ -133,11 +148,22 @@ for( my $dI = 0; $dI < $simujobparams::x_count * $simujobparams::y_count; $dI++ 
 	for( my $sI = 4; $sI < 9; $sI++ )
 	{
 		print BPSCORES "\t" unless( $xi == 0 && $sI == 4 );
-		print BPSCORES ($data_values[$sI][$dI]/$data_count[$sI][$dI]);
+		if($data_count[$sI][$dI] > 0)
+		{
+			print BPSCORES ($data_values[$sI][$dI]/$data_count[$sI][$dI]);
+		}else{
+			print BPSCORES "0";
+		}
 	}
 } 
 
 createGradientPlot($output_filenames[4],"rbplocalization.R");
+
+writeScoreFile( $tmp_scorefile, 9 );
+createGradientPlot( $output_filenames[5], "rgradientplot.R" );
+writeScoreFile( $tmp_scorefile, 10 );
+createGradientPlot( $output_filenames[6], "rgradientplot.R" );
+
 
 exit 0;
 
