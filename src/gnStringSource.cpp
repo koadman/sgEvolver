@@ -5,6 +5,7 @@
 #include "gnStringSource.h"
 #include "libGenome/gnFragmentSpec.h"
 #include "libGenome/gnSourceSpec.h"
+#include <cstring>
 
 using namespace std;
 using namespace genome;
