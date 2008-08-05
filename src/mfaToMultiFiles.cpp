@@ -1,5 +1,6 @@
 #include "libGenome/gnSequence.h"
 #include "libGenome/gnFASSource.h"
+#include <algorithm>
 
 using namespace std;
 using namespace genome;
