@@ -1,7 +1,5 @@
 #!/bin/sh
-aclocal && \
-autoheader && \
-automake -a && \
-autoconf && \
+autoheader
+autoreconf --force --install -I config && \
 echo "Now run ./configure --prefix=$HOME ; make install"
 

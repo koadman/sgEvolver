@@ -1,16 +1,20 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_INIT(sgEvolver, 0.7.0)
+AC_PREREQ([2.59])
+AC_INIT(sgEvolver, 0.7.1)
+AC_CONFIG_SRCDIR([src/sgEvolver.cpp])
+AC_CONFIG_HEADERS([src/config.h])
+AC_CONFIG_AUX_DIR(config)
 
 dnl Get the target and build system types and add appropriate options
 AC_CANONICAL_TARGET
 
 AM_INIT_AUTOMAKE([no-define])
 
-PKG_CHECK_MODULES(DEPS, libMems-1.6 >= 1.0.0)
-AC_SUBST(DEPS_CFLAGS)
-AC_SUBST(DEPS_LIBS)
-
 AC_PREFIX_DEFAULT(/usr/local)
+
+dnl Override default O2
+CFLAGS=${CFLAGS-""}
+CXXFLAGS=${CXXFLAGS-""}
 
 dnl Checks for programs.
 AC_PROG_CC
@@ -35,6 +39,10 @@ AC_DEFINE(GETOPT_UNDEFINED,[],"Define this if the system does not provide getopt
 ()")
 )
 
+PKG_CHECK_MODULES(DEPS, libMems-1.6 >= 1.0.0)
+AC_SUBST(DEPS_CFLAGS)
+AC_SUBST(DEPS_LIBS)
+
 dnl Mac OS X won't allow static compilation...
 STATIC_FLAG="-static"
 if ( test "x$target_vendor" = "xapple") then
@@ -53,7 +61,7 @@ AC_ARG_ENABLE(debug,
 esac],[debug=false])
 AM_CONDITIONAL(DEBUG, test x$debug = xtrue)
 
-AM_CONFIG_HEADER(config.h)
+#AM_CONFIG_HEADER(config.h)
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
