@@ -3,9 +3,9 @@ if DEBUG
 D_CXXFLAGS = -Wall -g -D__GNDEBUG__ 
 else
 endif
-OPTIMIZATION = -O3 -Wall -mfpmath=sse -msse -msse2 -funroll-loops -fomit-frame-pointer -ftree-vectorize -funsafe-math-optimizations
+OPTIMIZATION = -O3 -Wall -funroll-loops -fomit-frame-pointer -ftree-vectorize -funsafe-math-optimizations
 AM_CXXFLAGS = -DCOMMAND_LINE $(OPTIMIZATION) $(D_CXXFLAGS) 
-AM_LDFLAGS = @STATIC_FLAG@ -Wl,--whole-archive -lpthread -Wl,--no-whole-archive
+AM_LDFLAGS = @STATIC_FLAG@ 
 
 bin_PROGRAMS = sgEvolver scoreAlignment2 mfaToMultiFiles maf2xmfa
 sgEvolver_SOURCES = \

@@ -44,7 +44,7 @@ AC_SUBST(DEPS_CFLAGS)
 AC_SUBST(DEPS_LIBS)
 
 dnl Mac OS X won't allow static compilation...
-STATIC_FLAG="-static"
+STATIC_FLAG="-static -Wl,--whole-archive -lpthread -Wl,--no-whole-archive"
 if ( test "x$target_vendor" = "xapple") then
         STATIC_FLAG=""
 fi
