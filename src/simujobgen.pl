@@ -175,6 +175,7 @@ for( my $repI = 0; $repI < $simujobparams::repetitions; $repI++ ){
 
 createPbsScripts();
 createCondorScripts();
+createSGEScripts();
 
 my $run_description_file = "run_description.txt";
 open( RUN_FILE, ">$run_description_file" );
@@ -185,6 +186,7 @@ close RUN_FILE;
 print "\n\nJob generation complete.\n";
 print "Edit the file mauveAlign.condor to test an aligner other than mauveAligner.\n";
 print "Start jobs with something like 'condor_submit_dag -maxjobs 100 jobs.dag'.\n\n";
+print "Or qsub sge.sh on Sun Grid Engine\n";
 
 exit(0);
 
@@ -213,6 +215,26 @@ close QSUB_FILE;
 `chmod 755 qsub.sh`;
 
 }
+
+sub createSGEScripts
+{
+my $sge_scratch_dir = $simujobparams::SGEscratch;
+open( SGE_FILE, ">sge.sh" );
+print SGE_FILE "\#!/bin/sh\n";
+print SGE_FILE "\#\$ -cwd\n";
+print SGE_FILE "\#\$ -t 1-$total_runs\n";
+print SGE_FILE "mkdir -p $sge_scratch_dir/aln\$SGE_TASK_ID\n";
+print SGE_FILE "cd alignjob.\$SGE_TASK_ID\n";
+print SGE_FILE "setenv CURDIR \`pwd\`\n";
+print SGE_FILE "cp * $sge_scratch_dir/aln\$SGE_TASK_ID\n";
+print SGE_FILE "cd $sge_scratch_dir/aln\$SGE_TASK_ID\n";
+print SGE_FILE $simujobparams::tools_dir."/simujobrun.pl $simujobparams::aligner\n";
+print SGE_FILE "mv * \$CURDIR\n";
+print SGE_FILE "rm -rf ../aln\$SGE_TASK_ID\n";
+close SGE_FILE;
+`chmod 755 sge.sh`;
+}
+
 
 sub createCondorScripts
 {
