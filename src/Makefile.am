@@ -3,7 +3,7 @@ if DEBUG
 D_CXXFLAGS = -Wall -g -D__GNDEBUG__ 
 else
 endif
-OPTIMIZATION = -O3 -Wall -funroll-loops -fomit-frame-pointer -ftree-vectorize -funsafe-math-optimizations
+OPTIMIZATION = -O3 -Wall -funroll-loops -fomit-frame-pointer -ftree-vectorize 
 AM_CXXFLAGS = -DCOMMAND_LINE $(OPTIMIZATION) $(D_CXXFLAGS) 
 AM_LDFLAGS = @STATIC_FLAG@ 
 
