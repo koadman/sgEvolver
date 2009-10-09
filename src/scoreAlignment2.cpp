@@ -885,21 +885,21 @@ void constructIndelList( const vector< aligned_coords_t >& coords, vector< indel
 	// create sequence position to indel ID maps
 	for( size_t i = 0; i < indels.size(); i++ )
 	{
-		size_t s = min( abs(indels[i].left_block_left.pos1), abs(indels[i].left_block_right.pos1) );
-		size_t e = max( abs(indels[i].left_block_left.pos1), abs(indels[i].left_block_right.pos1) );
+		size_t s = min( absolut(indels[i].left_block_left.pos1), absolut(indels[i].left_block_right.pos1) );
+		size_t e = max( absolut(indels[i].left_block_left.pos1), absolut(indels[i].left_block_right.pos1) );
 		for( size_t j = s; j <= e; j++ )
 			imap.s1_l[j] = i;
-		s = min( abs(indels[i].right_block_left.pos1), abs(indels[i].right_block_right.pos1) );
-		e = max( abs(indels[i].right_block_left.pos1), abs(indels[i].right_block_right.pos1) );
+		s = min( absolut(indels[i].right_block_left.pos1), absolut(indels[i].right_block_right.pos1) );
+		e = max( absolut(indels[i].right_block_left.pos1), absolut(indels[i].right_block_right.pos1) );
 		for( size_t j = s; j <= e; j++ )
 			imap.s1_r[j] = i;
 
-		s = min( abs(indels[i].left_block_left.pos2), abs(indels[i].left_block_right.pos2) );
-		e = max( abs(indels[i].left_block_left.pos2), abs(indels[i].left_block_right.pos2) );
+		s = min( absolut(indels[i].left_block_left.pos2), absolut(indels[i].left_block_right.pos2) );
+		e = max( absolut(indels[i].left_block_left.pos2), absolut(indels[i].left_block_right.pos2) );
 		for( size_t j = s; j <= e; j++ )
 			imap.s2_l[j] = i;
-		s = min( abs(indels[i].right_block_left.pos2), abs(indels[i].right_block_right.pos2) );
-		e = max( abs(indels[i].right_block_left.pos2), abs(indels[i].right_block_right.pos2) );
+		s = min( absolut(indels[i].right_block_left.pos2), absolut(indels[i].right_block_right.pos2) );
+		e = max( absolut(indels[i].right_block_left.pos2), absolut(indels[i].right_block_right.pos2) );
 		for( size_t j = s; j <= e; j++ )
 			imap.s2_r[j] = i;
 	}
@@ -975,7 +975,7 @@ void computeIndelAccuracy( IntervalList& correct, IntervalList& calculated, vect
 				int64 lI;
 				for( lI = cor_indels[corI].left_block_right.pos1; lI >= cor_indels[corI].left_block_left.pos1; lI-- )
 				{
-					calcI_left = calc_map.s1_l[abs(lI)];
+					calcI_left = calc_map.s1_l[absolut(lI)];
 					if( calcI_left == NO_INDEL)
 						continue;	// nothing to see here
 					else{
@@ -995,7 +995,7 @@ void computeIndelAccuracy( IntervalList& correct, IntervalList& calculated, vect
 				int64 rI;
 				for( rI = cor_indels[corI].right_block_left.pos1; rI <= cor_indels[corI].right_block_right.pos1; rI++ )
 				{
-					calcI_right = calc_map.s1_r[abs(rI)];
+					calcI_right = calc_map.s1_r[absolut(rI)];
 					if( calcI_right == NO_INDEL)
 						continue;	// nothing to see here
 					else{
@@ -1025,7 +1025,7 @@ void computeIndelAccuracy( IntervalList& correct, IntervalList& calculated, vect
 					indel_bounds.push_back(make_pair( b1l, b1r ) );
 
 					int g1size = cor_indels[corI].right_block_left.pos1 - cor_indels[corI].left_block_right.pos1 - 1;
-					int g2size = abs(cor_indels[corI].left_block_right.pos2 - cor_indels[corI].right_block_left.pos2) - 1;
+					int g2size = absolut(cor_indels[corI].left_block_right.pos2 - cor_indels[corI].right_block_left.pos2) - 1;
 					gap_sizes.push_back( make_pair( g1size, g2size ) );
 
 					// the indel was perfectly predicted if no intervening
