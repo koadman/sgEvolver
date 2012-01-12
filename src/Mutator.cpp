@@ -108,8 +108,11 @@ void Inverter::getLocation( gnSeqI& start, gnSeqI& len, gnSeqI dest_len ) {
 	do{
 		len = (gnSeqI)exponentialSample( size );	// don't let it be 0
 	}while( len == 0 );
-	len = len < dest_len ? len : dest_len;
-	start = uniformSample( 0, dest_len - len );
+	// treat as circular
+	gnSeqI s = uniformSample( 0, dest_len );
+	gnSeqI circ = (s+len)%dest_len;
+	start = s < circ ? s : circ;
+	len = abs((int64)circ-(int64)s);
 }
 
 
@@ -183,6 +186,7 @@ void Inverter::mutate( node_id_t nodeI, const PhyloTree<TreeNode>& tree, Alignme
 	// convert sequence position to alignment column
 	evolved_alignment.getDeletionColumns( nodeI, start, length );
 	evolved_alignment.addInversion( nodeI, start, length );
+	cerr << "Inversion\t" << start << "\t" << start+length << "\n";
 // don't do recursive inversion -- applyInversions() will take care of applying it
 // to each sequence	
 }
