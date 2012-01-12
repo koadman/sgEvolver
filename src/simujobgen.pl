@@ -220,13 +220,20 @@ sub createSGEScripts
 {
 my $sge_scratch_dir = $simujobparams::SGEscratch;
 open( SGE_FILE, ">sge.sh" );
-print SGE_FILE "\#!/bin/sh\n";
+print SGE_FILE "\#!/bin/bash\n";
 print SGE_FILE "\#\$ -cwd\n";
+print SGE_FILE "\#\$ -V\n";
+print SGE_FILE "\#\$ -S /bin/bash\n";
 print SGE_FILE "\#\$ -t 1-$total_runs\n";
+print SGE_FILE "LOCKFILE=`pwd`/lock\n";
 print SGE_FILE "mkdir -p $sge_scratch_dir/aln\$SGE_TASK_ID\n";
 print SGE_FILE "cd alignjob.\$SGE_TASK_ID\n";
-print SGE_FILE "setenv CURDIR \`pwd\`\n";
+print SGE_FILE "export CURDIR=\`pwd\`\n";
+print SGE_FILE "while [ ! `mktemp -q \$LOCKFILE` ]; do\n";
+print SGE_FILE "        sleep 10s\n";
+print SGE_FILE "done\n";
 print SGE_FILE "cp * $sge_scratch_dir/aln\$SGE_TASK_ID\n";
+print SGE_FILE "rm \$LOCKFILE\n";
 print SGE_FILE "cd $sge_scratch_dir/aln\$SGE_TASK_ID\n";
 print SGE_FILE $simujobparams::tools_dir."/simujobrun.pl $simujobparams::aligner\n";
 print SGE_FILE "mv * \$CURDIR\n";
