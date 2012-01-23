@@ -91,7 +91,7 @@ int main( int argc, char* argv[] )
 			gnSeqI lend;
 			gnSeqI length;
 			string strand;
-			string total_seqlen;
+			gnSeqI total_seqlen;
 			string seq;
 			line_str >> seq_name;
 			line_str >> seq_name;
@@ -102,8 +102,13 @@ int main( int argc, char* argv[] )
 			line_str >> seq;
 			cur_aln_len = seq.size();
 			uint seq_id = seq_name_map[seq_name];
-			cout << "seq_id: " << seq_id << "\tcur_aln_len: " << cur_aln_len << "\tlend: " << lend + 1 << "\tseq_name: " << seq_name << endl;
-			gal.SetLeftEnd( seq_id, lend + 1 );
+			if(strand == "-"){
+				lend = total_seqlen - lend - length + 1;
+			}else{
+				lend += 1;
+			}
+			cout << "seq_id: " << seq_id << "\tcur_aln_len: " << cur_aln_len << "\tlend: " << lend + 1 << "\tstrand: " << strand << "\tseq_name: " << seq_name << " glen " << total_seqlen << endl;
+			gal.SetLeftEnd( seq_id, lend );
 			gal.SetLength( length, seq_id );
 			gal.SetOrientation( seq_id, strand == "+" ? AbstractMatch::forward : AbstractMatch::reverse );
 			aln_table[seq_id] = seq;
@@ -113,8 +118,11 @@ int main( int argc, char* argv[] )
 	cout << "Read " << line_count << " lines\n";
 	cout << "Read " << iv_list.size() << " LCBs\n";
 	cout << "Writing output to " << xmfa_out_name << endl;
-
-	iv_list.WriteStandardAlignment( xmfa_out );
+	try{
+		iv_list.WriteStandardAlignment( xmfa_out );
+	}catch(gnException& gne){
+		cerr << "Error code " << gne.GetCode().GetInt() << " message " << gne.GetMessage() << endl;
+	}
 }
 
 
