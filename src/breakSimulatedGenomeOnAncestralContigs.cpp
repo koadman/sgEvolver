@@ -88,7 +88,7 @@ int main( int argc, char* argv[] )
 			broken_seqs[seqI] += evolved_seqs.contig(seqI).subseq(new_breakpoints[seqI][breakI-1],len);
 			string contig_name = "contig_";
 			contig_name += boost::lexical_cast<string>(breakI);
-			broken_seqs[seqI].setContigName(breakI-1, contig_name);
+			broken_seqs[seqI].setContigName(broken_seqs[seqI].contigListSize()-1, contig_name);
 		}
 		gnFASSource::Write(broken_seqs[seqI],evolved_seqs.contigName(seqI) + ".fasta",false,false);
 	}
