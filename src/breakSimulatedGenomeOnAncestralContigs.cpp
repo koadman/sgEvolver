@@ -90,7 +90,13 @@ int main( int argc, char* argv[] )
 			contig_name += boost::lexical_cast<string>(breakI);
 			broken_seqs[seqI].setContigName(broken_seqs[seqI].contigListSize()-1, contig_name);
 		}
-		gnFASSource::Write(broken_seqs[seqI],evolved_seqs.contigName(seqI) + ".fasta",false,false);
+		string fasta_fname = evolved_seqs.contigName(seqI) + ".fasta";
+		ofstream fasta_out(fasta_fname.c_str());
+		for(int i=0; i<broken_seqs[seqI].contigListSize(); i++){
+			fasta_out << ">" + broken_seqs[seqI].contigName(i) << endl;
+			fasta_out << broken_seqs[seqI].contig(i).ToString() << endl;
+		}
+		fasta_out.close();
 	}
 	
 }
