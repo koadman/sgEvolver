@@ -81,6 +81,7 @@ int main( int argc, char* argv[] )
 	vector< gnSequence > broken_seqs(seq_count);
 	for( int seqI = 0; seqI < evolved_seqs.contigListSize() - 1; seqI++){
 		new_breakpoints[seqI].push_back(1);
+		new_breakpoints[seqI].push_back(evolved_seqs.contigLength(seqI));
 		sort(new_breakpoints[seqI].begin(), new_breakpoints[seqI].end());
 		for(int breakI=1; breakI < new_breakpoints[seqI].size(); breakI++){
 			gnSeqI len = new_breakpoints[seqI][breakI] - new_breakpoints[seqI][breakI-1];
