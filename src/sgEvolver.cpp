@@ -384,7 +384,7 @@ int main( int argc, char* argv[] ){
 	};
 
 	int m_argc = NELEMS( m_argv );
-	argc = m_argc; argv = (char**)m_argv;
+//	argc = m_argc; argv = (char**)m_argv;
 
 try{
 	if( argc <= 0 ){
