@@ -19,7 +19,6 @@ using namespace mems;
  * @param min 	The minimum sample value
  * @param max 	The maximum sample value
  */
-gnSeqI uniformSample( gnSeqI min, gnSeqI max );
 gnSeqI uniformSample( gnSeqI min, gnSeqI max ){
 	if( max == min )
 		return 0;
@@ -32,7 +31,6 @@ gnSeqI uniformSample( gnSeqI min, gnSeqI max ){
  * Sample an exponential distribution with mean theta
  * @param theta	the exponential mean
  */
-double exponentialSample( double theta );
 double exponentialSample( double theta ){
 	double z_samp = rndu();
 	z_samp = -log( z_samp ) * theta;
@@ -43,7 +41,6 @@ double exponentialSample( double theta ){
  * Sample a non-negative integer from a poisson distribution with mean p
  * @param p	the poisson mean
  */
-gnSeqI poissonSample( double p );
 gnSeqI poissonSample( double p ){
 	gnSeqI count = 0;
 	double lambda = 1;
@@ -56,10 +53,46 @@ gnSeqI poissonSample( double p ){
 	return count;
 }
 
-void IndelInserter::getLocation( gnSeqI& source_start, gnSeqI& source_len, gnSeqI& dest, gnSeqI dest_len ) {
+double normalSample(double mu, double sigma){
+	double r1 = rndu();
+	double r2 = rndu();
+	// use Box-Mueller transform to get a standard normal
+	double norm = sqrt(-2.0 * log(r1))*cos(2*PI*r2);
+	return (norm + mu) * sigma; // scale appropriately
+}
+
+/**
+ * Sample a from the categorical distribution
+ * @param d the categorical distribution
+ */
+int categoricalSample( const vector<double>& d ){
+	int count = 0;
+	double sum = 0;
+	double r = rndu();
+	for( ; count < d.size(); count++ ){
+		sum += d[count];
+		if( sum >= r )
+			break;
+	}
+	return count;
+}
+
+int round(double d){
+	return d >= 0 ? (int)(d+0.5) : (int)(d-0.5);
+}
+
+gnSeqI getIndelSize( int size ){
+	gnSeqI len = 0;
 	do{
-		source_len = poissonSample( size );	// don't let it be 0
-	}while( source_len == 0 );
+		len = poissonSample( size );
+		len *= 3;
+	}while( len == 0 );
+	len += round(normalSample(0,0.25)); // this makes a small fraction of indels cause codon frameshifts
+	return len;
+}
+
+void IndelInserter::getLocation( gnSeqI& source_start, gnSeqI& source_len, gnSeqI& dest, gnSeqI dest_len ) {
+	source_len = getIndelSize(size);
 	source_len = source_len < donor.alignedSeqsSize() ? source_len : donor.alignedSeqsSize() - 1;
 	source_start = uniformSample( 0, donor.alignedSeqsSize() - source_len - 1 );
 	dest = uniformSample( 0, dest_len );
@@ -83,9 +116,7 @@ void LargeHTInserter::getLocation( gnSeqI& source_start, gnSeqI& source_len, gnS
 }
 
 void IndelDeleter::getLocation( gnSeqI& start, gnSeqI& len, gnSeqI dest_len ) {
-	do{
-		len = poissonSample( size );
-	}while( len == 0 );
+	len = getIndelSize(size);
 	len = len < dest_len ? len : dest_len;
 	start = uniformSample( 0, dest_len - len );
 }

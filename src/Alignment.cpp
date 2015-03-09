@@ -671,5 +671,5 @@ void Alignment::writeEvolvedSequences( ostream& os, const PhyloTree<TreeNode>& t
 		out_seq += ungapped_seqs[ seqI ];
 		out_seq.setContigName( out_seq.contigListSize() - 1, alignment[ 0 ].names[ seqI ] );
 	}
-	gnFASSource::Write( out_seq, os );
+	gnFASSource::Write( out_seq, os, false, false );
 }

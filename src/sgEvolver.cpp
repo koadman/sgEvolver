@@ -14,6 +14,7 @@
 #include "libMems/gnAlignedSequences.h"
 #include "Mutator.h"
 #include "Alignment.h"
+#include <boost/algorithm/string.hpp>
 
 extern "C" {
 #include "twister.h"
@@ -209,9 +210,10 @@ void AlignmentEvolver::evolve( const PhyloTree<TreeNode>& tree, Alignment& evolv
 
 void print_usage( const char* pname ){
 	cerr << "Usage:" << endl;
-	cerr << pname << " [options] <tree file> <input alignment file> <output alignment file> <evolved sequence output file>" << endl;
+	cerr << pname << " [options] <tree file> <ancestral genome> <ancestral pan-genome> <output alignment file> <evolved sequence output file>" << endl;
 	cerr << "Options:" << endl;
-	cerr << "\t    --indel-freq=<number> Frequency of indel events" << endl;
+	cerr << "\t    --stop-codon-bias=<number> degree of bias against introducing stop codons, between 0 and 1, default 0" << endl;
+	cerr << "\t    --indel-freq=<number> Frequency of indel events, relative to nucleotide substitutions" << endl;
 	cerr << "\t    --small-ht-freq=<number> Frequency of small horizontal transfer and deletion events" << endl;
 	cerr << "\t    --large-ht-freq=<number> Frequency of large horizontal transfer and deletion events" << endl;
 	cerr << "\t    --inversion-freq=<number> Frequency of inversion events" << endl;
@@ -224,6 +226,133 @@ void print_usage( const char* pname ){
 	cerr << endl;
 }
 
+bool is_stop_codon(const vector<vector<int>>& cds_table, const string& seq, gnSeqI site){
+	for(int i=0; i<cds_table.size(); i++){
+		if(site < cds_table[i][0] || site > cds_table[i][1])
+			continue;	// not intersecting
+		if(cds_table[i][2] == 1){
+			int codon_start = ((site - cds_table[i][0]) / 3) * 3;
+			string codon = seq.substr(cds_table[i][0] + codon_start - 1, 3);
+			if(boost::iequals(codon, "TGA") || boost::iequals(codon, "TAA") || boost::iequals(codon, "TAG") ){
+				return true;
+			}
+		}else{
+			int left = cds_table[i][0];
+			int right = cds_table[i][1];
+			int codon_start = ((cds_table[i][1] - site) / 3) * 3;
+			string codon = seq.substr(cds_table[i][1] - codon_start - 3, 3);
+			if(boost::iequals(codon, "TCA") || boost::iequals(codon, "TTA") || boost::iequals(codon, "CTA") ){
+				return true;
+			}
+		}
+
+	}
+	return false;
+}
+
+gnAlignedSequences evolveNucleotides(PhyloTree<TreeNode>& tree, gnSequence& gns, const vector<vector<int>>& cds_table, double stop_codon_bias){
+	// evolve under F81 model -- e.g. maintain background composition 
+	// calculate background nucleotide composition
+	vector<double> acgt(4,0);
+	string seq = gns.ToString();
+	for(int i=0; i<seq.length(); i++){
+		switch(seq[i]){
+			case 'A':
+			case 'a':
+				acgt[0]++;
+				break;
+			case 'C':
+			case 'c':
+				acgt[1]++;
+				break;
+			case 'G':
+			case 'g':
+				acgt[2]++;
+				break;
+			case 'T':
+			case 't':
+				acgt[3]++;
+				break;
+		}
+	}
+	double total = acgt[0] + acgt[1] + acgt[2] + acgt[3];
+	for(int i=0; i<4; i++){
+		acgt[i] /= total;
+	}
+
+	// walk the tree and evolve sequences
+	stack<node_id_t> node_stack;
+	vector<string> evolved_sequences(tree.size(), gns.ToString());
+	vector<string> names(tree.size());
+	int ancestor_count = 0;
+	node_stack.push(tree.root);
+	while(!node_stack.empty()) {
+		node_id_t cur_node = node_stack.top();
+		node_stack.pop();
+		// add the children to the stack
+		for(int i = 0; i < tree[cur_node].children.size(); i++){
+			node_stack.push(tree[cur_node].children[i]);
+		}
+		if(tree[cur_node].name.size() > 0){
+			names[cur_node] = tree[cur_node].name;
+		}else{
+			stringstream ss;
+			ss << "Ancestor " << ancestor_count++;
+			names[cur_node] = ss.str();
+		}
+		if(tree[cur_node].parents.size() == 0)
+			continue;
+
+
+		// sample the number of mutation events from the Poisson distribution
+		int event_count = poissonSample(gns.length() * tree[cur_node].distance);
+		// set the sequence to be identical to the parent
+		evolved_sequences[cur_node] = evolved_sequences[tree[cur_node].parents[0]];
+		// now for each mutation, sample its location uniformly and apply it
+		int new_nt[4] = {'A','C','G','T'};
+		for(int i = 0; i < event_count; i++){
+			int site = uniformSample(0, gns.length());
+			int nt = categoricalSample(acgt);
+			// TODO: add check for stop codons here!!
+			if(is_stop_codon(cds_table, evolved_sequences[cur_node], site+1)){
+				// don't touch an existing stop codon...for now.
+			}else{
+				char cur_nt = evolved_sequences[cur_node][site];
+				evolved_sequences[cur_node][site] = new_nt[nt];
+				if(is_stop_codon(cds_table, evolved_sequences[cur_node], site+1)){
+					// accept the new codon with probability 1 - stop_codon_bias
+					double r = rndu();
+					if( r > 1 - stop_codon_bias )
+						evolved_sequences[cur_node][site] = cur_nt;
+				}
+			}
+		}
+	}
+	gnAlignedSequences gnas;
+	gnas.sequences = evolved_sequences;
+	gnas.names = names;
+	return gnas;
+}
+
+void parse_gff(istream& gff_in, vector<vector<int>>& cds_table){
+	string line;
+	while(getline(gff_in, line)){
+		if(line[0] == '#')
+			continue;
+		istringstream line_str(line);
+		vector<string> keys(9);
+		for(int i=0; i<9; i++){
+			line_str >> keys[i];
+		}
+		if(keys[2] != "CDS")
+			continue;
+		cds_table.push_back(vector<int>(3));
+		cds_table.back()[0] = atoi(keys[3].c_str());
+		cds_table.back()[1] = atoi(keys[4].c_str());
+		cds_table.back()[2] = keys[6] == "+" ? 1 : 0;
+	}
+}
+
 #define NELEMS(a) ( sizeof( a ) / sizeof( *a ) )
 
 /**
@@ -234,27 +363,6 @@ int main( int argc, char* argv[] ){
 	const char* m_argv[] = {
 		"sgEvolver",
 
-/*		"--indel-freq=.1",
-		"--small-ht-freq=.05",
-		"--large-ht-freq=.01",
-		"--inversion-freq=.01",
-*/
-/*		"--indel-freq=0",
-		"--small-ht-freq=0",
-		"--large-ht-freq=0",
-		"--large-ht-min=0",
-		"--large-ht-max=0",
-		"--inversion-freq=0.004",
-		"--inversion-size=2000",
-*/
-/*		"--indel-freq=.2",
-		"--small-ht-freq=.001",
-		"--large-ht-freq=.0001",
-		"--inversion-freq=.008",
-		"--large-ht-min=500",
-		"--large-ht-max=1000",
-		"--inversion-size=4000",
-*/
 		"--indel-freq=0",
 		"--small-ht-freq=0",
 		"--large-ht-freq=0",
@@ -262,22 +370,21 @@ int main( int argc, char* argv[] ){
 		"--large-ht-min=500",
 		"--large-ht-max=1000",
 		"--inversion-size=4000",
+		"--stop-codon-bias=0.95",
+		"--ancestral-gff=NC_000915.gff",
+		"--accessory-gff=NC_000921.gff",
+		"--random-seed=42",
 
 		"--debug-checking",
 		"test.tree",
-		"seqgen.dat",
+		"NC_000915.gbk",
+		"NC_000921.gbk",
 		"evolved.dat",
 		"evolved.fas",
 	};
 
 	int m_argc = NELEMS( m_argv );
-
-#if defined(__MWERKS__) && defined(__GNDEBUG__)
-	if( argc < 2 ){
-//		argc = m_argc;
-//		argv = m_argv;
-	}
-#endif
+	argc = m_argc; argv = (char**)m_argv;
 
 try{
 	if( argc <= 0 ){
@@ -300,11 +407,15 @@ try{
 	gnSeqI large_ht_max = 60000;
 	gnSeqI inversion_size = 50000;
 	string tree_filename;
-	string alignment_filename;
+	string ancestral_filename;
+	string ancestral_pan_filename;
+	string ancestral_gff_filename;
+	string ancestral_pan_gff_filename;
 	string output_filename;
 	string evolved_filename;
 	bool print_version = false;
 	int64 random_seed = -1;
+	double stop_codon_bias = 0; // 0 is no bias against stop codons, 1 is total avoidance of introduced stops
 	char* tmp;
 
 	// parse command line with gnu getopt
@@ -327,6 +438,9 @@ try{
 		{"version", no_argument, &long_opt, 10 },
 		{"debug-checking", optional_argument, &long_opt, 11 },
 		{"random-seed", optional_argument, &long_opt, 12 },
+		{"stop-codon-bias", optional_argument, &long_opt, 13 },
+		{"ancestral-gff", optional_argument, &long_opt, 14 },
+		{"accessory-gff", optional_argument, &long_opt, 15 },
 		{0, 0, 0, 0}	// for correct termination of option list
 						// getopt_long can segfault without this
 	};
@@ -375,6 +489,15 @@ try{
 					case 12:
 						random_seed = atol( optarg );
 						break;
+					case 13:
+						stop_codon_bias = atof( optarg );
+						break;
+					case 14:
+						ancestral_gff_filename = optarg;
+						break;
+					case 15:
+						ancestral_pan_gff_filename = optarg;
+						break;
 					default:
 						print_usage( argv[0] );
 						return -1;
@@ -388,14 +511,15 @@ try{
 		cerr << "sgEvolver " << " build date " << __DATE__ << " at " << __TIME__ << endl;
 	}
 
-	if( optind + 3 >= argc ){
-		cerr << "You must specify a tree file name, an input alignment file name, an output alignment file name, and an evolved sequences output file name\n";
+	if( optind + 4 >= argc ){
+		cerr << "You must specify a tree file name, an input ancestral genome file name, an input ancestral pan-genome file name, an output alignment file name, and an evolved sequences output file name\n";
 		return -1;
 	}
 	tree_filename = av[ optind ];
-	alignment_filename = av[ optind + 1 ];
-	output_filename = av[ optind + 2 ];
-	evolved_filename = av[ optind + 3 ];
+	ancestral_filename = av[ optind + 1 ];
+	ancestral_pan_filename = av[ optind + 2 ];
+	output_filename = av[ optind + 3 ];
+	evolved_filename = av[ optind + 4 ];
 	
 	// open the tree file
 	ifstream tree_file( tree_filename.c_str() );
@@ -404,28 +528,43 @@ try{
 		return -1;
 	}
 
-	// open the alignment file
-	ifstream alignment_file( alignment_filename.c_str() );
-	if( !alignment_file.is_open() ){
-		cerr << "Unable to open " << alignment_filename << endl;
-		return -1;
-	}
-
 	// parse the tree file
 	PhyloTree<TreeNode> tree;
 	tree.readTree( tree_file );
 
-	// parse the alignment file
+	// parse the ancestral (pan-)genome files
+	gnSequence ancestor;
+	ancestor.LoadSource(ancestral_filename);
+	gnSequence ancestor_pangenome;
+	ancestor_pangenome.LoadSource(ancestral_pan_filename);
+
+	// try to load GFF annotations, if available
+	vector<vector<int>> ancestral_cds;
+	vector<vector<int>> ancestral_pan_cds;
+	if(ancestral_gff_filename.length() > 0){
+		ifstream gff_in(ancestral_gff_filename.c_str());
+		if( !gff_in.is_open() ){
+			cerr << "Unable to open " << ancestral_gff_filename << endl;
+			return -1;
+		}
+		parse_gff(gff_in, ancestral_cds);
+	}
+	if(ancestral_pan_gff_filename.length() > 0){
+		ifstream gff_in(ancestral_gff_filename.c_str());
+		if( !gff_in.is_open() ){
+			cerr << "Unable to open " << ancestral_pan_gff_filename << endl;
+			return -1;
+		}
+		parse_gff(gff_in, ancestral_pan_cds);
+	}
+
+	// do some nucleotide substitution
 	gnAlignedSequences destination;
 	gnAlignedSequences donor;
+	destination = evolveNucleotides(tree, ancestor, ancestral_cds, stop_codon_bias);
+	donor = evolveNucleotides(tree, ancestor_pangenome, ancestral_pan_cds, stop_codon_bias);
+
 	string line;
-	getline( alignment_file, line );
-	if( line != "#NEXUS" ){
-		cerr << "Error: Alignment file is not in SeqGen NEXUS format.\n";
-		return -1;
-	}
-	destination.constructFromRelaxedNexus( alignment_file );
-	donor.constructFromRelaxedNexus( alignment_file );
 
 	// do the benjarath length consistency check
 	for( int seqI = 1; seqI < destination.sequences.size(); seqI++ ){

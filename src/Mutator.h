@@ -44,6 +44,11 @@ private:
 	Mutator();
 };
 
+gnSeqI poissonSample( double p );
+double exponentialSample( double theta );
+gnSeqI uniformSample( gnSeqI min, gnSeqI max );
+int categoricalSample( const std::vector<double>& d );
+
 inline
 Mutator::Mutator( mems::gnAlignedSequences& donor_seqs ) : 
 donor( donor_seqs )
