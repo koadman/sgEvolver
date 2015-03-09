@@ -77,7 +77,8 @@ int categoricalSample( const vector<double>& d ){
 	return count;
 }
 
-int round(double d){
+// MSVC does not implement round. gcc does.
+int my_round(double d){
 	return d >= 0 ? (int)(d+0.5) : (int)(d-0.5);
 }
 
@@ -87,7 +88,7 @@ gnSeqI getIndelSize( int size ){
 		len = poissonSample( size );
 		len *= 3;
 	}while( len == 0 );
-	len += round(normalSample(0,0.25)); // this makes a small fraction of indels cause codon frameshifts
+	len += my_round(normalSample(0,0.25)); // this makes a small fraction of indels cause codon frameshifts
 	return len;
 }
 

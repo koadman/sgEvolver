@@ -226,7 +226,7 @@ void print_usage( const char* pname ){
 	cerr << endl;
 }
 
-bool is_stop_codon(const vector<vector<int>>& cds_table, const string& seq, gnSeqI site){
+bool is_stop_codon(const vector< vector<int> >& cds_table, const string& seq, gnSeqI site){
 	for(int i=0; i<cds_table.size(); i++){
 		if(site < cds_table[i][0] || site > cds_table[i][1])
 			continue;	// not intersecting
@@ -250,7 +250,7 @@ bool is_stop_codon(const vector<vector<int>>& cds_table, const string& seq, gnSe
 	return false;
 }
 
-gnAlignedSequences evolveNucleotides(PhyloTree<TreeNode>& tree, gnSequence& gns, const vector<vector<int>>& cds_table, double stop_codon_bias){
+gnAlignedSequences evolveNucleotides(PhyloTree<TreeNode>& tree, gnSequence& gns, const vector< vector<int> >& cds_table, double stop_codon_bias){
 	// evolve under F81 model -- e.g. maintain background composition 
 	// calculate background nucleotide composition
 	vector<double> acgt(4,0);
@@ -334,7 +334,7 @@ gnAlignedSequences evolveNucleotides(PhyloTree<TreeNode>& tree, gnSequence& gns,
 	return gnas;
 }
 
-void parse_gff(istream& gff_in, vector<vector<int>>& cds_table){
+void parse_gff(istream& gff_in, vector< vector<int> >& cds_table){
 	string line;
 	while(getline(gff_in, line)){
 		if(line[0] == '#')
@@ -539,8 +539,8 @@ try{
 	ancestor_pangenome.LoadSource(ancestral_pan_filename);
 
 	// try to load GFF annotations, if available
-	vector<vector<int>> ancestral_cds;
-	vector<vector<int>> ancestral_pan_cds;
+	vector< vector<int> > ancestral_cds;
+	vector< vector<int> > ancestral_pan_cds;
 	if(ancestral_gff_filename.length() > 0){
 		ifstream gff_in(ancestral_gff_filename.c_str());
 		if( !gff_in.is_open() ){
@@ -568,12 +568,20 @@ try{
 
 	// do the benjarath length consistency check
 	for( int seqI = 1; seqI < destination.sequences.size(); seqI++ ){
+			cerr << "dest seq " << seqI -1 << " length " << destination.sequences[ seqI-1 ].length() << endl;
+			cerr << "dest seq " << seqI << " length " << destination.sequences[ seqI ].length() << endl;
 		if( destination.sequences[ seqI ].length() != destination.sequences[ seqI - 1 ].length() )
+		{
 			throw "Error parsing input alignment.  Check that all sequences in the alignment have equal lengths and that the correct number of sequences is specified.";
+		}
 	}
         for( int seqI = 1; seqI < destination.sequences.size(); seqI++ ){
+			cerr << "donor seq " << seqI -1 << " length " << donor.sequences[ seqI-1 ].length() << endl;
+			cerr << "donor seq " << seqI << " length " << donor.sequences[ seqI ].length() << endl;
 		if( donor.sequences[ seqI ].length() != donor.sequences[ seqI - 1 ].length() )
+		{
 			throw "Error parsing input alignment.  Check that all sequences in the alignment have equal lengths and that the correct number of sequences is specified.";
+		}
         }
 
 	// initialize the mutators with the parameters given on the command line
