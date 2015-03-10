@@ -53,14 +53,6 @@ gnSeqI poissonSample( double p ){
 	return count;
 }
 
-double normalSample(double mu, double sigma){
-	double r1 = rndu();
-	double r2 = rndu();
-	// use Box-Mueller transform to get a standard normal
-	double norm = sqrt(-2.0 * log(r1))*cos(2*PI*r2);
-	return (norm + mu) * sigma; // scale appropriately
-}
-
 /**
  * Sample a from the categorical distribution
  * @param d the categorical distribution
@@ -77,18 +69,17 @@ int categoricalSample( const vector<double>& d ){
 	return count;
 }
 
-// MSVC does not implement round. gcc does.
-int my_round(double d){
-	return d >= 0 ? (int)(d+0.5) : (int)(d-0.5);
-}
-
+double prob_inframe = 0.95;
 gnSeqI getIndelSize( int size ){
 	gnSeqI len = 0;
 	do{
 		len = poissonSample( size );
 		len *= 3;
 	}while( len == 0 );
-	len += my_round(normalSample(0,0.25)); // this makes a small fraction of indels cause codon frameshifts
+	// with some probability, create a potential frameshift
+	if(rndu() > prob_inframe){
+		len -= rndu() > 0.5 ? 1 : 2;
+	}
 	return len;
 }
 
