@@ -363,7 +363,7 @@ int main( int argc, char* argv[] ){
 	const char* m_argv[] = {
 		"sgEvolver",
 
-		"--indel-freq=0",
+		"--indel-freq=0.01",
 		"--small-ht-freq=0",
 		"--large-ht-freq=0",
 		"--inversion-freq=.00001",
@@ -401,7 +401,7 @@ try{
 	double small_ht_frequency = 0;
 	double large_ht_frequency = 0;
 	double inversion_frequency = 0;
-	gnSeqI indel_size = 3;
+	gnSeqI indel_size = 1;
 	gnSeqI small_ht_size = 200;
 	gnSeqI large_ht_min = 10000;
 	gnSeqI large_ht_max = 60000;
