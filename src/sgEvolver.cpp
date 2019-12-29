@@ -9,7 +9,7 @@
 #include <stack>
 #include <cstring>
 #include <ctime>
-#include "getopt.h"
+#include "my_getopt.h"
 #include "libGenome/gnSequence.h"
 #include "libMems/gnAlignedSequences.h"
 #include "Mutator.h"

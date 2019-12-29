@@ -382,6 +382,7 @@ bool findFirstCorrectlyAlignedPair(
 		calc_iter = calc_last;
 		return false;
 	}
+	return true;
 }
 
 size_t findLcb( vector< LCB >& calc_pair_adj, int64 pos )
